@@ -165,14 +165,14 @@ bool detectionExplositionUneBombeHorizontale (CMatrice & mat){
             for (size_t k (j+1); k < mat[i].size () && mat[i][j] == mat[i][k]; ++k) ++combienALaSuite;
             if (combienALaSuite >= 3){
                 auMoinsUneExplosion = true;
-                cout << "on a une suite en position ligne = " << i+1
+                /*cout << "on a une suite en position ligne = " << i+1
                      << "; colonne = " << j+1
                      << "; sur  " << combienALaSuite << " cases" << endl;
                 cout << string (20, '-') << endl << "matrice avant suppression" << endl;
-                afficheMatriceV2(mat);
+                afficheMatriceV2(mat);*/
                 explosionUneBombeHorizontale (mat, i, j, combienALaSuite);
-                cout << string (20, '-') << endl << "matrice après suppression" << endl;
-                afficheMatriceV2(mat);
+                //cout << string (20, '-') << endl << "matrice après suppression" << endl;
+                //afficheMatriceV2(mat);
 
             }
         }
@@ -244,7 +244,7 @@ int ppalExo01 (){
     initMat(mat);
     // affichage de la matrice sans les numéros de lignes / colonnes en haut / à gauche
     afficheMatriceV0 (mat);
-    //detectionExplositionUneBombeHorizontale (mat);
+    detectionExplositionUneBombeHorizontale (mat);
     return 0;
 }
 
@@ -313,10 +313,10 @@ int main() {
     //-------------------------------------//
 
     // ---------Exercice 3 -----------------//
-    //return ppalExo03();
+    return ppalExo03();
     //-------------------------------------//
 
     // ---------Exercice 3 -----------------//
-    return ppalExo04();
+    //return ppalExo04();
     //-------------------------------------//
 }
