@@ -171,7 +171,7 @@ bool detectionExplositionUneBombeHorizontale (CMatrice & mat){
                 cout << string (20, '-') << endl << "matrice avant suppression" << endl;
                 afficheMatriceV2(mat);
                 explosionUneBombeHorizontale (mat, i, j, combienALaSuite);
-                cout << string (20, '-') << endl << "matrice après suppresion" << endl;
+                cout << string (20, '-') << endl << "matrice après suppression" << endl;
                 afficheMatriceV2(mat);
 
             }
@@ -189,10 +189,12 @@ bool detectionExplositionUneBombeHorizontale (CMatrice & mat){
 //fait descendre toutes les cases d'une unité suite à une explosition
 void explosionUneBombeHorizontale (CMatrice & mat, const size_t & numLigne,
                                     const size_t & numColonne, const size_t & combien){
-    for(unsigned j = 0; j < combien; ++j){
-        mat[numLigne][j] = KAIgnorer;
+    for(unsigned k = 0; k < combien; ++k){
+        mat[numLigne][numColonne+k] = KAIgnorer;
+        for(unsigned j = numLigne; j > 0; --j){
+            swap(mat[j][numColonne+k], mat[j-1][numColonne+k]);
+        }
     }
-
 
 }
 
