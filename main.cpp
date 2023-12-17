@@ -2,6 +2,7 @@
 #include <vector>
 #include <iomanip>
 #include <algorithm>
+#include <fstream>
 
 using namespace std;
 
@@ -28,25 +29,83 @@ void fond (const unsigned & coul) {
 }
 
 
-typedef ushort contenueDUneCase;
+typedef unsigned short contenueDUneCase;
 typedef vector <contenueDUneCase> CVLigne; // un type représentant une ligne de la grille
 typedef vector <CVLigne> CMatrice; // un type représentant la grille
 
 const contenueDUneCase KAIgnorer = 0;
 const contenueDUneCase KPlusGrandNombreDansLaMatrice = 4;
 
+void importNv(CMatrice & mat, const string & nomNv){
+    ifstream fichNv;
+    fichNv.open(nomNv);
+
+    unsigned nb, haut, larg;
+
+    fichNv >> haut;
+    fichNv >> larg;
+
+    mat.resize(haut);
+    for(unsigned i = 0; i < haut; ++i){
+        mat[i].resize(larg);
+    }
+
+    unsigned comptHaut=0, comptLarg=0;
+    while(fichNv >> nb){
+        cout << nb << endl;
+        if(comptLarg >= larg){
+            comptLarg = 0;
+            ++comptHaut;
+        }
+
+        mat[comptLarg][comptHaut] = nb;
+
+        ++comptLarg;
+    }
+
+    fichNv.close();
+}
+
+void editNv (CMatrice & mat);
+
 //initialisation de la grille de jeu
 void initMat (CMatrice & mat, const size_t & nbLignes = 10,
              const size_t & nbColonnes = 10,
               const unsigned & nbMax= KPlusGrandNombreDansLaMatrice){
+    char mode;
 
-    mat.resize(nbLignes);
-    for (size_t i = 0; i < nbLignes; ++i){
-        mat[i].resize(nbColonnes);
-        for(size_t j = 0; j < nbColonnes; ++j){
-            mat[i][j] = rand() % nbMax + 1;
+    while (1) {
+        cout << "Choisir un mode :" << endl
+             << "Importer un niveau (i)" << endl
+             << "Niveau aléatoire (n)" << endl
+             << "Éditeur de niveaux (e)" << endl;
+        cin >> mode;
+
+        mode = tolower(mode);
+        if (mode == 'i'){
+            string lvlName;
+            cout << "Entrer le nom du fichier niveau :" << endl;
+            cin >> lvlName;
+            importNv(mat, lvlName);
+            break;
+
+        } else if (mode == 'n'){
+            mat.resize(nbLignes);
+            for (size_t i = 0; i < nbLignes; ++i){
+                mat[i].resize(nbColonnes);
+                for(size_t j = 0; j < nbColonnes; ++j){
+                    mat[i][j] = rand() % nbMax + 1;
+                }
+            }
+            break;
+
+        } else if (mode == 'e'){
+            cout << "Entrée dans l'éditeur de niveaux..." << endl;
+            // editNv(mat);
+        } else {
+            cout << "Mauvais choix" << endl;
+            continue;
         }
-
     }
 }
 
