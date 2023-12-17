@@ -19,7 +19,7 @@ using namespace std;
 nsGraphics::Vec2D triPos;
 nsGraphics::RGBAcolor triColor = nsGraphics::KWhite;
 
-void events(MinGL &window, int& i)
+void events(MinGL &window, int& level, bool& fullscreen)
 {
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
@@ -50,28 +50,43 @@ void events(MinGL &window, int& i)
             x = triPos.getX();
             y = triPos.getY();
             cout << "Position x : " << x << " Position y : " << y << endl;
-            if (x >= 610+wx*2 && x <= 632+wx*2 && y >=10+wy/10 && y <= 30+wy/10){
-                window.stopGraphic();
-            }
-            if (i == 0){
-                if (x > 285+wx && x < 360+wx){
-                    if (y >= 220+wy && y <= 230+wy){
-                        cout << "Vous avez choisi le niveau 1 !" << endl;
-                        ++i;
-                    } else if (y >= 250+wy && y <= 265+wy){
-                        cout << "Vous avez choisi le niveau 2 !" << endl;
-                        i = 2;
-                    } else if (y >= 280+wy && y <= 295+wy){
-                        cout << "Vous avez choisi le niveau 3 !" << endl;
-                        i = 3;
-                    } else if (y >= 310+wy && y <= 325+wy){
-                        cout << "Vous avez choisi le niveau 4 !" << endl;
-                        i = 4;
-                    } else if (y >= 340+wy && y <= 355+wy){
-                        cout << "Vous avez choisi le niveau 5 !" << endl;
-                        i = 5;
+            if (y >=11+wy/10 && y <= 30+wy/10){
+                if (x >= 610+wx*2 && x <= 632+wx*2){
+                    cout << "Vous quittez le jeu !" << endl << endl;
+                    window.stopGraphic();
+                } else if (x >= 585+wx*2 && x <= 605+wx*2) {
+                    cout << " Vous avez mis en plein écran !!" << endl;
+                    if (fullscreen){
+                        fullscreen = false;
+                        window.setWindowSize(nsGraphics::Vec2D(640, 640));
+                    } else {
+                        fullscreen = true;
+                        window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
                     }
                 }
+            }
+            if (level == 0){
+                if (x >= 285+wx && x <= 360+wx){
+                    if (y >= 220+wy && y <= 230+wy){
+                        cout << "Vous avez choisi le niveau 1 !" << endl;
+                        ++level;
+                    } else if (y >= 250+wy && y <= 265+wy){
+                        cout << "Vous avez choisi le niveau 2 !" << endl;
+                        level = 2;
+                    } else if (y >= 280+wy && y <= 295+wy){
+                        cout << "Vous avez choisi le niveau 3 !" << endl;
+                        level = 3;
+                    } else if (y >= 310+wy && y <= 325+wy){
+                        cout << "Vous avez choisi le niveau 4 !" << endl;
+                        level = 4;
+                    } else if (y >= 340+wy && y <= 355+wy){
+                        cout << "Vous avez choisi le niveau 5 !" << endl;
+                        level = 5;
+                    }
+                }
+            } else if (level !=0 && x >= 560 && x <= 580 && y >= 10 && y <=30){
+                cout << "Vous retournez au menu !" << endl;
+                level = 0;
             }
             break;
 
@@ -82,7 +97,7 @@ void events(MinGL &window, int& i)
     }
 }
 
-void dessiner(MinGL &window, int& i)
+void dessiner(MinGL &window, int& level)
 {
     // On récupère la taille de la fenêtre
     int score = 0;
@@ -91,12 +106,19 @@ void dessiner(MinGL &window, int& i)
     int wx = (windowSize.getX() - 640)/2;
     int wy = (windowSize.getY() - 640)/4;
 
-    // MinGL 2 supporte l'affichage de texte sur la fenêtre assez simplement.
+    // On dessine le bouton pour fermer le jeu
     window << nsShape::Circle(nsGraphics::Vec2D(620+wx*2, 20+wy/10), 10, nsGraphics::KRed);
     window << nsShape::Line(nsGraphics::Vec2D(613+wx*2, 27+wy/10), nsGraphics::Vec2D(627+wx*2, 13+wy/10), nsGraphics::KWhite, 3.f);
     window << nsShape::Line(nsGraphics::Vec2D(613+wx*2, 13+wy/10), nsGraphics::Vec2D(627+wx*2, 27+wy/10), nsGraphics::KWhite, 3.f);
 
-    if (i == 0){
+    // On dessine le bouton pour mettre en plein écran
+    window << nsShape::Line(nsGraphics::Vec2D(588+wx*2, 12+wy/10), nsGraphics::Vec2D(604+wx*2, 12+wy/10), nsGraphics::KWhite, 3.f);
+    window << nsShape::Line(nsGraphics::Vec2D(588+wx*2, 12+wy/10), nsGraphics::Vec2D(588+wx*2, 28+wy/10), nsGraphics::KWhite, 3.f);
+    window << nsShape::Line(nsGraphics::Vec2D(588+wx*2, 28+wy/10), nsGraphics::Vec2D(604+wx*2, 28+wy/10), nsGraphics::KWhite, 3.f);
+    window << nsShape::Line(nsGraphics::Vec2D(604+wx*2, 12+wy/10), nsGraphics::Vec2D(604+wx*2, 28+wy/10), nsGraphics::KWhite, 3.f);
+
+
+    if (level == 0){
         window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Fait par : KERBADOU Islem, ODERZO Flavio", nsGraphics::KWhite);
         window << nsGui::Text(nsGraphics::Vec2D(20, 40), "FREMENTIN Felix, BLABLA Hugo", nsGraphics::KWhite);
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Candy Crush", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
@@ -113,43 +135,109 @@ void dessiner(MinGL &window, int& i)
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 350+wy), "Niveau 5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    } if (i == 1) {
+    } else {
+        // On dessine le score
         window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Score : " + to_string(score), nsGraphics::KWhite);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 120+wy), "Niveau 1", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        // Draw the grid lines
-        const int boardSize = 10;
-        const int cellSize = 30; // Adjusted cell size
-        const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centered below "Niveau 1"
-        const int boardTopLeftY = 200 + wy;
 
-        for (int row = 0; row <= boardSize; ++row)
-        {
-            int lineY = boardTopLeftY + row * cellSize;
-            window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
-        }
+        // On dessine le nom du nouveau (ex: niveau 1)
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 120+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
-        for (int col = 0; col <= boardSize; ++col)
-        {
-            int lineX = boardTopLeftX + col * cellSize;
-            window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
+        // On dessine la flèche pour retourner au menu
+        window << nsShape::Triangle(nsGraphics::Vec2D(570+wx*2, 30+wy/10), nsGraphics::Vec2D(570+wx*2, 10+wy/10), nsGraphics::Vec2D(560+wx*2, 20+wy/10), nsGraphics::KWhite);
+        window << nsShape::Line(nsGraphics::Vec2D(570+wx*2, 20+wy/10), nsGraphics::Vec2D(580+wx*2, 20+wy/10), nsGraphics::KWhite, 3.f);
+
+        if (level == 1) {
+            // Dessine les lignes des cellules
+            const int boardSize = 10;
+            const int cellSize = 30; // Ajuster la taille des cellules
+            const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centré en dessous de "Niveau 1"
+            const int boardTopLeftY = 200 + wy;
+
+            for (int row = 0; row <= boardSize; ++row)
+            {
+                int lineY = boardTopLeftY + row * cellSize;
+                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
+            }
+
+            for (int col = 0; col <= boardSize; ++col)
+            {
+                int lineX = boardTopLeftX + col * cellSize;
+                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
+            }
+        } else if (level == 2){
+            // Dessine les lignes des cellules
+            const int boardSize = 10;
+            const int cellSize = 30; // Ajuster la taille des cellules
+            const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centré en dessous de "Niveau 1"
+            const int boardTopLeftY = 200 + wy;
+
+            for (int row = 0; row <= boardSize; ++row)
+            {
+                int lineY = boardTopLeftY + row * cellSize;
+                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
+            }
+
+            for (int col = 0; col <= boardSize; ++col)
+            {
+                int lineX = boardTopLeftX + col * cellSize;
+                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
+            }
+        } else if (level == 3){
+            // Dessine les lignes des cellules
+            const int boardSize = 10;
+            const int cellSize = 30; // Ajuster la taille des cellules
+            const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centré en dessous de "Niveau 1"
+            const int boardTopLeftY = 200 + wy;
+
+            for (int row = 0; row <= boardSize; ++row)
+            {
+                int lineY = boardTopLeftY + row * cellSize;
+                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
+            }
+
+            for (int col = 0; col <= boardSize; ++col)
+            {
+                int lineX = boardTopLeftX + col * cellSize;
+                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
+            }
+        } else if (level == 4){
+            // Dessine les lignes des cellules
+            const int boardSize = 10;
+            const int cellSize = 30; // Ajuster la taille des cellules
+            const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centré en dessous de "Niveau 1"
+            const int boardTopLeftY = 200 + wy;
+
+            for (int row = 0; row <= boardSize; ++row)
+            {
+                int lineY = boardTopLeftY + row * cellSize;
+                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
+            }
+
+            for (int col = 0; col <= boardSize; ++col)
+            {
+                int lineX = boardTopLeftX + col * cellSize;
+                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
+            }
+        } else if (level == 5){
+            // Dessine les lignes des cellules
+            const int boardSize = 10;
+            const int cellSize = 30; // Ajuster la taille des cellules
+            const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centré en dessous de "Niveau 1"
+            const int boardTopLeftY = 200 + wy;
+
+            for (int row = 0; row <= boardSize; ++row)
+            {
+                int lineY = boardTopLeftY + row * cellSize;
+                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
+            }
+
+            for (int col = 0; col <= boardSize; ++col)
+            {
+                int lineX = boardTopLeftX + col * cellSize;
+                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
+            }
         }
-    } else if (i == 2){
-        window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Score : " + to_string(score), nsGraphics::KWhite);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 120+wy), "Niveau 2", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    } else if (i == 3){
-        window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Score : " + to_string(score), nsGraphics::KWhite);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 120+wy), "Niveau 3", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    } else if (i == 4){
-        window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Score : " + to_string(score), nsGraphics::KWhite);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 120+wy), "Niveau 4", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    } else if (i == 5){
-        window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Score : " + to_string(score), nsGraphics::KWhite);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 120+wy), "Niveau 5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
     }
 }
 
@@ -443,7 +531,8 @@ int game (){
 
 int initMinGL(){
     // Initialise le système
-    int i = 0;
+    int level = 0;
+    bool fullscreen = false;
     MinGL window("Candy Crush", nsGraphics::Vec2D(640, 640), nsGraphics::Vec2D(128, 128), nsGraphics::KPurple);
     window.initGlut();
     window.initGraphic();
@@ -461,8 +550,8 @@ int initMinGL(){
         window.clearScreen();
 
         // On dessine le texte
-        events(window, i);
-        dessiner(window, i);
+        events(window, level, fullscreen);
+        dessiner(window, level);
         souris(window);
 
         // On finit la frame en cours
