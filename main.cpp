@@ -81,6 +81,7 @@ void initMat (CMatrice & mat, const size_t & nbLignes = 10,
              << "Éditeur de niveaux (e)" << endl;
         cin >> mode;
 
+        mode = tolower(mode);
         if (mode == 'i'){
             string lvlName;
             cout << "Entrer le nom du fichier niveau :" << endl;
@@ -100,7 +101,7 @@ void initMat (CMatrice & mat, const size_t & nbLignes = 10,
 
         } else if (mode == 'e'){
             cout << "Entrée dans l'éditeur de niveaux..." << endl;
-            editNv(mat);
+            // editNv(mat);
         } else {
             cout << "Mauvais choix" << endl;
             continue;
