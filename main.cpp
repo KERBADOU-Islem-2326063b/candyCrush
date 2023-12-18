@@ -418,8 +418,17 @@ int game (){
     return 0;
 }
 
+int swapmat(int& FirstclickedRow, int& FirstclickedCol, int& clickedRow, int& clickedCol){
+    cout << "OK" << endl;
+    swap(mat[FirstclickedRow][FirstclickedCol], mat[clickedRow][clickedCol]);
+}
+
+int FirstclickedCol = 0;
+int FirstclickedRow = 0;
 void events(MinGL &window, int& level, bool& fullscreen)
 {
+    int clickedCol = 0;
+    int clickedRow = 0;
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
     windowSize = window.getWindowSize();
@@ -500,26 +509,23 @@ void events(MinGL &window, int& level, bool& fullscreen)
                     y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize) {
 
                     // On calcule l'indice de la cellule
-                    int clickedCol = (x - boardTopLeftX) / totalCellSize;
-                    int clickedRow = (y - boardTopLeftY) / totalCellSize;
-                    int FirstclickedCol;
-                    int FirstclickedRow;
+                    clickedCol = (y - boardTopLeftY) / totalCellSize;
+                    clickedRow = (x - boardTopLeftX) / totalCellSize;
                     ++clique;
                     if (clique == 1){
                         cout << "PREMIER CLIQUE" << endl;
                         FirstclickedCol = clickedCol;
                         FirstclickedRow = clickedRow;
-                        cout << clickedCol << clickedRow << endl;
+                        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Choississez une deuxieme cellule", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+                        // cout << mat[2][2] << endl;
                     } else if (clique == 2) {
                         cout << "SECOND CLIQUE" << endl;
-                        swap(mat[FirstclickedRow][FirstclickedCol], mat[clickedRow][clickedCol]); // LE CRASH VIENT DE CETTE LIGNE
+                        swapmat(FirstclickedRow, FirstclickedCol, clickedRow, clickedCol); // LE CRASH VIENT DE CETTE LIGNE
                         clique = 0;
                     }
 
-                    cout << "Vous avez cliqué sur la cellule ligne " << clickedRow << ", colonne " << clickedCol << endl;
-                    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Choississez un blzblz", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-
+                    cout << "Vous avez cliqué sur la cellule ligne " << clickedCol << ", colonne " << clickedRow << endl;
                 }
                 break;
             }
@@ -533,6 +539,7 @@ void events(MinGL &window, int& level, bool& fullscreen)
         }
     }
 }
+
 
 void dessiner(MinGL &window, int& level)
 {
