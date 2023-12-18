@@ -20,9 +20,6 @@ using namespace std;
 nsGraphics::Vec2D triPos;
 nsGraphics::RGBAcolor triColor = nsGraphics::KWhite;
 
-
-
-
 void clearScreen () {
     cout << "\033[H\033[2J";
 }
