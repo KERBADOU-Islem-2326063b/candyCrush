@@ -550,7 +550,7 @@ void dessiner(MinGL &window, int& level)
     window << nsShape::Line(nsGraphics::Vec2D(604+wx*2, 12+wy/10), nsGraphics::Vec2D(604+wx*2, 28+wy/10), nsGraphics::KWhite, 3.f);
 
 
-    if (level == 0){
+    if (level == 0){   
         window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Fait par : KERBADOU Islem, ODERZO Flavio", nsGraphics::KWhite);
         window << nsGui::Text(nsGraphics::Vec2D(20, 40), "FREMENTIN Felix, BLABLA Hugo", nsGraphics::KWhite);
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Candy Crush", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
@@ -584,6 +584,11 @@ void dessiner(MinGL &window, int& level)
         window << nsShape::Line(nsGraphics::Vec2D(570+wx*2, 20+wy/10), nsGraphics::Vec2D(580+wx*2, 20+wy/10), nsGraphics::KWhite, 3.f);
 
         if (level == 1) {
+            // if (score == 12){
+            //    window << nsGui::Text(nsGraphics::Vec2D(330+wx, 200+wy), "Vous avez gagné !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+            //                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);         TODO
+            //    level = 0;                                                                      TODO
+            // }
             detectionExplosionUneBombeHorizontale(mat, score);
             detectionExplosionUneBombeVerticale(mat, score);
             if (clique == 1){
