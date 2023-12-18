@@ -60,6 +60,7 @@ CMatrice mat;
 bool mouse_clicked = false;
 bool initMats = false;
 int clique = 0;
+unsigned score (0);
 
 // affichage de la matrice sans les numéros de lignes / colonnes en haut / à gauche
 void  afficheMatriceV0 (const CMatrice & Mat) {
@@ -532,7 +533,6 @@ void dessiner(MinGL &window, int& level)
     }
 
     // On récupère la taille de la fenêtre
-    unsigned score (0);
     nsGraphics::Vec2D windowSize;
     windowSize = window.getWindowSize();
     int wx = (windowSize.getX() - 640)/2;
