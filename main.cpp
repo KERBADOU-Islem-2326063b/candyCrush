@@ -61,6 +61,7 @@ int boardTopLeftX;
 int boardTopLeftY;
 CMatrice mat;
 bool mouse_clicked = false;
+int clique = 0;
 
 // affichage de la matrice sans les numéros de lignes / colonnes en haut / à gauche
 void  afficheMatriceV0 (const CMatrice & Mat) {
@@ -504,9 +505,24 @@ void events(MinGL &window, int& level, bool& fullscreen)
                     // On calcule l'indice de la cellule
                     int clickedCol = (x - boardTopLeftX) / totalCellSize;
                     int clickedRow = (y - boardTopLeftY) / totalCellSize;
+                    int FirstclickedCol;
+                    int FirstclickedRow;
+                    ++clique;
+                    if (clique == 1){
+                        cout << "PREMIER CLIQUE" << endl;
+                        FirstclickedCol = clickedCol;
+                        FirstclickedRow = clickedRow;
+                        cout << clickedCol << clickedRow << endl;
+                    } else if (clique == 2) {
+                        cout << "SECOND CLIQUE" << endl;
+                        swap(mat[FirstclickedRow][FirstclickedCol], mat[clickedRow][clickedCol]); // LE CRASH VIENT DE CETTE LIGNE
+                        clique = 0;
+                    }
+
                     cout << "Vous avez cliqué sur la cellule ligne " << clickedRow << ", colonne " << clickedCol << endl;
                     window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Choississez un blzblz", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
                 }
                 break;
             }
