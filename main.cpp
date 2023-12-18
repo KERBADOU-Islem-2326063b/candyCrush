@@ -58,6 +58,7 @@ int boardTopLeftX;
 int boardTopLeftY;
 CMatrice mat;
 bool mouse_clicked = false;
+bool initMats = false;
 int clique = 0;
 
 // affichage de la matrice sans les numéros de lignes / colonnes en haut / à gauche
@@ -378,7 +379,7 @@ void initMat (CMatrice & mat, int level, const size_t & nbLignes = 10,
             editNv(mat);
             break;
         } else {
-            cout << "Mauvais choix" << endl;
+            // cout << "Mauvais choix" << endl;
             continue;
         }
     }
@@ -418,17 +419,12 @@ int game (){
     return 0;
 }
 
-int swapmat(int& FirstclickedRow, int& FirstclickedCol, int& clickedRow, int& clickedCol){
-    cout << "OK" << endl;
-    swap(mat[FirstclickedRow][FirstclickedCol], mat[clickedRow][clickedCol]);
-}
-
 int FirstclickedCol = 0;
 int FirstclickedRow = 0;
+int clickedCol = 0;
+int clickedRow = 0;
 void events(MinGL &window, int& level, bool& fullscreen)
-{
-    int clickedCol = 0;
-    int clickedRow = 0;
+{ 
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
     windowSize = window.getWindowSize();
@@ -501,7 +497,7 @@ void events(MinGL &window, int& level, bool& fullscreen)
                         level = 5;
                     }
                 }
-            } else if (level !=0 && x >= 560 && x <= 580 && y >= 10 && y <=30){
+            } else if (level !=0 && x >= 560+wx*2 && x <= 580+wx*2 && y >= 10+wy/10 && y <=30+wy/10){
                 cout << "Vous retournez au menu !" << endl;
                 level = 0;
             } else {
@@ -512,19 +508,6 @@ void events(MinGL &window, int& level, bool& fullscreen)
                     clickedCol = (y - boardTopLeftY) / totalCellSize;
                     clickedRow = (x - boardTopLeftX) / totalCellSize;
                     ++clique;
-                    if (clique == 1){
-                        cout << "PREMIER CLIQUE" << endl;
-                        FirstclickedCol = clickedCol;
-                        FirstclickedRow = clickedRow;
-                        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Choississez une deuxieme cellule", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-                        // cout << mat[2][2] << endl;
-                    } else if (clique == 2) {
-                        cout << "SECOND CLIQUE" << endl;
-                        swapmat(FirstclickedRow, FirstclickedCol, clickedRow, clickedCol); // LE CRASH VIENT DE CETTE LIGNE
-                        clique = 0;
-                    }
-
                     cout << "Vous avez cliqué sur la cellule ligne " << clickedCol << ", colonne " << clickedRow << endl;
                 }
                 break;
@@ -543,6 +526,11 @@ void events(MinGL &window, int& level, bool& fullscreen)
 
 void dessiner(MinGL &window, int& level)
 {
+    if (initMats == false){
+        initMat(mat, 1, 10, 10, 9);
+        initMats = true;
+    }
+
     // On récupère la taille de la fenêtre
     unsigned score (0);
     nsGraphics::Vec2D windowSize;
@@ -596,10 +584,19 @@ void dessiner(MinGL &window, int& level)
         window << nsShape::Line(nsGraphics::Vec2D(570+wx*2, 20+wy/10), nsGraphics::Vec2D(580+wx*2, 20+wy/10), nsGraphics::KWhite, 3.f);
 
         if (level == 1) {
-            CMatrice mat;
-            initMat(mat, level, 10, 10, 9);
             detectionExplosionUneBombeHorizontale(mat, score);
             detectionExplosionUneBombeVerticale(mat, score);
+            if (clique == 1){
+                FirstclickedCol = clickedCol;
+                FirstclickedRow = clickedRow;
+            } else if (clique == 2) {
+            // test
+                cout << "SECOND CLIQUE" << endl;
+                if (abs(FirstclickedRow - clickedRow) <= 1 && abs(FirstclickedCol - clickedCol) <= 1) {
+                    swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
+                    clique = 0;
+            } clique = 0;
+         }
             // afficheMatriceV2(mat);
 
             boardSize = 5;
@@ -723,9 +720,6 @@ void souris(MinGL &window){
 
 
 int main() {
-    // Flavio
-    // return game();
-
     // Initialise le système
     int level = 0;
     bool fullscreen = false;
