@@ -60,7 +60,7 @@ int totalCellSize;
 int boardTopLeftX;
 int boardTopLeftY;
 CMatrice mat;
-
+bool mouse_clicked = false;
 
 // affichage de la matrice sans les numéros de lignes / colonnes en haut / à gauche
 void  afficheMatriceV0 (const CMatrice & Mat) {
@@ -450,9 +450,16 @@ void events(MinGL &window, int& level, bool& fullscreen)
 
             // On récupère la position de la souris
             int x, y;
-            x = triPos.getX();
-            y = triPos.getY();
-            cout << "Position x : " << x << " Position y : " << y << endl;
+
+            if (mouse_clicked == false){
+                x = triPos.getX();
+                y = triPos.getY();
+                cout << "Position x : " << x << " Position y : " << y << endl;
+                mouse_clicked = true;
+            } else {
+                mouse_clicked = false;
+            }
+
             if (y >=11+wy/10 && y <= 30+wy/10){
                 if (x >= 610+wx*2 && x <= 632+wx*2){
                     cout << "Vous quittez le jeu !" << endl << endl;
