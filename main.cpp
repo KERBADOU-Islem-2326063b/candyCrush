@@ -345,7 +345,7 @@ void initMat (CMatrice & mat, int level, const size_t & nbLignes = 10,
             editNv(mat);
             break;
         } else {
-            // cout << "Mauvais choix" << endl;
+            cout << "Mauvais choix" << endl;
             continue;
         }
     }
@@ -502,12 +502,14 @@ void dessiner(MinGL &window, int& level)
         // On dessine le score
         window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Score : " + to_string(score), nsGraphics::KWhite);
         if (score >= 12){
-            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 180+wy), "VOUS AVEZ GAGNE !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 140+wy), "VOUS AVEZ GAGNE !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 160+wy), "VOUS POUVEZ CONTINUER A JOUER", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         }
 
         // On dessine le nom du nouveau (ex: niveau 1)
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 120+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 100+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
         // On dessine la flèche pour retourner au menu
