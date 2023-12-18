@@ -67,14 +67,14 @@ void  afficheMatriceV0 (const CMatrice & Mat) {
     for (size_t i = 0; i < Mat.size(); ++i){
         for(size_t j = 0; j < Mat[i].size(); ++j){
             switch(Mat[i][j]){
-            case 1: couleur(KReset); break;
-            case 2: couleur(KNoir); break;
-            case 3: couleur(KRouge); break;
-            case 4: couleur(KJaune); break;
-            case 5: couleur(KBleu); break;
-            case 6: couleur(KMagenta); break;
-            case 7: couleur(KVert); break;
-            default: couleur(KCyan); break;
+                case 1: couleur(KReset); break;
+                case 2: couleur(KNoir); break;
+                case 3: couleur(KRouge); break;
+                case 4: couleur(KJaune); break;
+                case 5: couleur(KBleu); break;
+                case 6: couleur(KMagenta); break;
+                case 7: couleur(KVert); break;
+                default: couleur(KCyan); break;
             }
             cout << Mat[i][j] << " ";
             couleur(KReset);
@@ -88,14 +88,14 @@ void  afficheMatriceV1 (const CMatrice & Mat) {
     for (size_t i = 0; i < Mat.size(); ++i){
         for(size_t j = 0; j < Mat[i].size(); ++j){
             switch(Mat[i][j]){
-            case 1: couleur(KReset); break;
-            case 2: couleur(KNoir); break;
-            case 3: couleur(KRouge); break;
-            case 4: couleur(KJaune); break;
-            case 5: couleur(KBleu); break;
-            case 6: couleur(KMagenta); break;
-            case 7: couleur(KVert); break;
-            default: couleur(KCyan); break;
+                case 1: couleur(KReset); break;
+                case 2: couleur(KNoir); break;
+                case 3: couleur(KRouge); break;
+                case 4: couleur(KJaune); break;
+                case 5: couleur(KBleu); break;
+                case 6: couleur(KMagenta); break;
+                case 7: couleur(KVert); break;
+                default: couleur(KCyan); break;
             }
             if (Mat[i][j] == KAIgnorer) fond(KRouge);
             cout << Mat[i][j] << " ";
@@ -121,14 +121,14 @@ void afficheMatriceV2 (const CMatrice & Mat, const unsigned & score = 0,
         cout << setw(2) << i + 1 << " | ";
         for(size_t j = 0; j < Mat[i].size(); ++j){
             switch(Mat[i][j]){
-            case 1: couleur(KReset); break;
-            case 2: couleur(KVert); break;
-            case 3: couleur(KRouge); break;
-            case 4: couleur(KJaune); break;
-            case 5: couleur(KBleu); break;
-            case 6: couleur(KMagenta); break;
-            case 7: couleur(KNoir); break;
-            default: couleur(KCyan); break;
+                case 1: couleur(KReset); break;
+                case 2: couleur(KVert); break;
+                case 3: couleur(KRouge); break;
+                case 4: couleur(KJaune); break;
+                case 5: couleur(KBleu); break;
+                case 6: couleur(KMagenta); break;
+                case 7: couleur(KNoir); break;
+                default: couleur(KCyan); break;
             }
             if (i == rowSelect && j == colSelect && colSelect != 99 && rowSelect != 99) fond(KBlanc);
             if (Mat[i][j] == KAIgnorer) fond(KRouge);
@@ -143,7 +143,7 @@ void afficheMatriceV2 (const CMatrice & Mat, const unsigned & score = 0,
 
 //fait descendre toutes les cases d'une unité suite à une explosition
 void explosionUneBombeHorizontale (CMatrice & mat, const size_t & numLigne,
-                                  const size_t & numColonne, const size_t & combien){
+                                    const size_t & numColonne, const size_t & combien){
     for(unsigned k = 0; k < combien; ++k){
         mat[numLigne][numColonne+k] = KAIgnorer;
         for(unsigned j = numLigne; j > 0; --j){
@@ -230,7 +230,7 @@ void faitUnMouvement (CMatrice & mat, const char & deplacement,
 }
 
 void explosionUneBombeVerticale (CMatrice & mat, const size_t & numLigne,
-                                const size_t & numColonne, const size_t & combien){
+                                    const size_t & numColonne, const size_t & combien){
     for(unsigned k = 0; k < combien; ++k){
         mat[numLigne+k][numColonne] = KAIgnorer;
         for(unsigned j = numLigne; j > 0; --j){
@@ -422,7 +422,6 @@ int game (){
 
 void events(MinGL &window, int& level, bool& fullscreen)
 {
-    bool mouse_clicked = false;
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
     windowSize = window.getWindowSize();
@@ -430,6 +429,8 @@ void events(MinGL &window, int& level, bool& fullscreen)
     int wy = (windowSize.getY() - 640)/4;
     // On vérifie chaque évènement de la queue d'évènements
     while (window.getEventManager().hasEvent())
+
+
     {
         const nsEvent::Event_t actualEvent = window.getEventManager().pullEvent();
 
@@ -449,16 +450,9 @@ void events(MinGL &window, int& level, bool& fullscreen)
 
             // On récupère la position de la souris
             int x, y;
-            if (mouse_clicked == false){
-                x = triPos.getX();
-                y = triPos.getY();
-                mouse_clicked = true;
-            } else {
-                mouse_clicked = false;
-            }
-
+            x = triPos.getX();
+            y = triPos.getY();
             cout << "Position x : " << x << " Position y : " << y << endl;
-
             if (y >=11+wy/10 && y <= 30+wy/10){
                 if (x >= 610+wx*2 && x <= 632+wx*2){
                     cout << "Vous quittez le jeu !" << endl << endl;
@@ -497,31 +491,16 @@ void events(MinGL &window, int& level, bool& fullscreen)
                 cout << "Vous retournez au menu !" << endl;
                 level = 0;
             } else {
-                int clique = 0;
-                while (clique == 0 || clique == 1)
-                    if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalCellSize &&
-                        y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize) {
+                if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalCellSize &&
+                    y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize) {
 
-                        // On calcule l'indice de la cellule
-                        int clickedCol = (x - boardTopLeftX) / totalCellSize;
-                        int clickedRow = (y - boardTopLeftY) / totalCellSize;
-                        int firstCol;
-                        int firstRow;
-                        cout << "Vous avez cliqué sur la cellule ligne " << clickedRow << ", colonne " << clickedCol << endl;
-                        ++clique;
-                        if (clique == 1){
-                            cout << "PREMIER CLIQUE" << endl;
-                            firstCol = clickedCol;
-                            firstRow = clickedRow;
-                            continue;
-                        } else if (clique >= 2){
-                            cout << "DEUXIEME CLIQUE" << endl;
-                            // swap(mat[firstCol][firstRow], mat[clickedCol][clickedRow]);
-                            clique = 0;
-                            break;
-                        }
-
-                    }
+                    // On calcule l'indice de la cellule
+                    int clickedCol = (x - boardTopLeftX) / totalCellSize;
+                    int clickedRow = (y - boardTopLeftY) / totalCellSize;
+                    cout << "Vous avez cliqué sur la cellule ligne " << clickedRow << ", colonne " << clickedCol << endl;
+                    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Choississez un blzblz", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+                }
                 break;
             }
 
@@ -594,6 +573,7 @@ void dessiner(MinGL &window, int& level)
             initMat(mat, level, 10, 10, 9);
             detectionExplosionUneBombeHorizontale(mat, score);
             detectionExplosionUneBombeVerticale(mat, score);
+            // afficheMatriceV2(mat);
 
             boardSize = 5;
             cellSize = 50;
