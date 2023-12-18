@@ -501,7 +501,7 @@ void dessiner(MinGL &window, int& level)
     } else {
         // On dessine le score
         window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Score : " + to_string(score), nsGraphics::KWhite);
-        if (score >= 12){
+        if (level == 1 && score >= 12){
             window << nsGui::Text(nsGraphics::Vec2D(330+wx, 140+wy), "VOUS AVEZ GAGNE !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
             window << nsGui::Text(nsGraphics::Vec2D(330+wx, 160+wy), "VOUS POUVEZ CONTINUER A JOUER", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
