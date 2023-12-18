@@ -56,11 +56,15 @@ int gapSize;
 int totalCellSize;
 int boardTopLeftX;
 int boardTopLeftY;
-CMatrice mat;
+int clique = 0;
+int FirstclickedCol = 0;
+int FirstclickedRow = 0;
+int clickedCol = 0;
+int clickedRow = 0;
 bool mouse_clicked = false;
 bool initMats = false;
-int clique = 0;
 unsigned score (0);
+CMatrice mat;
 
 // affichage de la matrice sans les numéros de lignes / colonnes en haut / à gauche
 void  afficheMatriceV0 (const CMatrice & Mat) {
@@ -189,45 +193,6 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
 }
 
 
-void faitUnMouvement (CMatrice & mat, const char & deplacement,
-                     const size_t & numLigne, const size_t & numCol) {
-
-    size_t nvPosLigne (numLigne), nvPosCol (numCol);
-    switch (tolower(deplacement)) {
-    case 'a':
-        --nvPosLigne;
-        --nvPosCol;
-        break;
-    case 'z':
-        --nvPosLigne;
-        break;
-    case 'e':
-        --nvPosLigne;
-        ++nvPosCol;
-        break;
-    case 'q':
-        --nvPosCol;
-        break;
-    case 'd':
-        ++nvPosCol;
-        break;
-    case 'w':
-        ++nvPosLigne;
-        --nvPosCol;
-        break;
-    case 'x':
-        ++nvPosLigne;
-        break;
-    case 'c':
-        ++nvPosLigne;
-        ++nvPosCol;
-        break;
-    default:
-        cout<<"A Z E Q D W X C ?"<<endl;
-        break;
-    }
-    swap(mat[numLigne][numCol], mat[nvPosLigne][nvPosCol]);
-}
 
 void explosionUneBombeVerticale (CMatrice & mat, const size_t & numLigne,
                                     const size_t & numColonne, const size_t & combien){
@@ -386,44 +351,6 @@ void initMat (CMatrice & mat, int level, const size_t & nbLignes = 10,
     }
 }
 
-int game (){
-    CMatrice mat;
-    unsigned score (0);
-    // initMat(mat);
-    afficheMatriceV2(mat);
-    // affichage de la matrice sans les numéros de lignes / colonnes en haut / à gauche
-    // detectionExplosionUneBombeHorizontale (mat, score);
-    // detectionExplosionUneBombeVerticale(mat, score);
-    //condition de victoire a trouver
-    while (true) {
-        afficheMatriceV2 (mat, score);
-        cout << "fais un mouvement, ";
-        cout << "numero de ligne : ";
-        size_t numLigne;
-        cin >> numLigne;
-        if (numLigne == 'f') continue;
-        cout << "numero de colonne : ";
-        size_t numCol;
-        cin >> numCol;
-        if (numCol == 'f') continue;
-        afficheMatriceV2(mat, score, numLigne-1, numCol-1);
-        cout << "Sens du deplacement : (A|Z|E|Q|D|W|X|C) : " << endl;
-        char deplacement;
-        cin >> deplacement;
-        if (deplacement == 'f') continue;
-        faitUnMouvement (mat, deplacement, numLigne-1, numCol-1);
-
-        while(detectionExplosionUneBombeHorizontale (mat, score));
-        while(detectionExplosionUneBombeVerticale(mat, score));
-        afficheMatriceV2 (mat, score);
-    }
-    return 0;
-}
-
-int FirstclickedCol = 0;
-int FirstclickedRow = 0;
-int clickedCol = 0;
-int clickedRow = 0;
 void events(MinGL &window, int& level, bool& fullscreen)
 { 
     // On récupère la taille de la fenêtre
@@ -574,6 +501,10 @@ void dessiner(MinGL &window, int& level)
     } else {
         // On dessine le score
         window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Score : " + to_string(score), nsGraphics::KWhite);
+        if (score >= 12){
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 180+wy), "VOUS AVEZ GAGNE !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        }
 
         // On dessine le nom du nouveau (ex: niveau 1)
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 120+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
@@ -584,11 +515,6 @@ void dessiner(MinGL &window, int& level)
         window << nsShape::Line(nsGraphics::Vec2D(570+wx*2, 20+wy/10), nsGraphics::Vec2D(580+wx*2, 20+wy/10), nsGraphics::KWhite, 3.f);
 
         if (level == 1) {
-            // if (score == 12){
-            //    window << nsGui::Text(nsGraphics::Vec2D(330+wx, 200+wy), "Vous avez gagné !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-            //                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);         TODO
-            //    level = 0;                                                                      TODO
-            // }
             detectionExplosionUneBombeHorizontale(mat, score);
             detectionExplosionUneBombeVerticale(mat, score);
             if (clique == 1){
@@ -597,7 +523,7 @@ void dessiner(MinGL &window, int& level)
             } else if (clique == 2) {
             // test
                 cout << "SECOND CLIQUE" << endl;
-                if (abs(FirstclickedRow - clickedRow) <= 1 && abs(FirstclickedCol - clickedCol) <= 1) {
+                if (abs(FirstclickedRow - clickedRow) <= 1 && abs(FirstclickedCol - clickedCol) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer) {
                     swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
                     clique = 0;
             } clique = 0;
