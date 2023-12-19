@@ -16,39 +16,12 @@
 
 using namespace std;
 
-
-nsGraphics::Vec2D triPos;
-nsGraphics::RGBAcolor triColor = nsGraphics::KWhite;
-
-void clearScreen () {
-    cout << "\033[H\033[2J";
-}
-
-const unsigned KReset   (0);
-const unsigned KNoir    (30);
-const unsigned KRouge   (31);
-const unsigned KVert    (32);
-const unsigned KJaune   (33);
-const unsigned KBleu    (34);
-const unsigned KMagenta (35);
-const unsigned KCyan    (36);
-const unsigned KBlanc   (37);
-
-void couleur (const unsigned & coul) {
-    cout << "\033[" << coul << "m";
-}
-
-void fond (const unsigned & coul) {
-    cout << "\033[" << coul + 10 << "m";
-}
-
+// Initialisation des variables utilisées
 
 typedef unsigned short contenueDUneCase;
 typedef vector <contenueDUneCase> CVLigne; // un type représentant une ligne de la grille
 typedef vector <CVLigne> CMatrice; // un type représentant la grille
 
-const contenueDUneCase KAIgnorer = 0;
-const contenueDUneCase KPlusGrandNombreDansLaMatrice = 4;
 
 int boardSize;
 int cellSize;
@@ -65,6 +38,36 @@ bool mouse_clicked = false;
 bool initMats = false;
 unsigned score (0);
 CMatrice mat;
+
+const unsigned KReset   (0);
+const unsigned KNoir    (30);
+const unsigned KRouge   (31);
+const unsigned KVert    (32);
+const unsigned KJaune   (33);
+const unsigned KBleu    (34);
+const unsigned KMagenta (35);
+const unsigned KCyan    (36);
+const unsigned KBlanc   (37);
+
+const contenueDUneCase KAIgnorer = 0;
+const contenueDUneCase KPlusGrandNombreDansLaMatrice = 4;
+
+nsGraphics::Vec2D triPos;
+nsGraphics::RGBAcolor triColor = nsGraphics::KWhite;
+
+void clearScreen () {
+    cout << "\033[H\033[2J";
+}
+
+
+void couleur (const unsigned & coul) {
+    cout << "\033[" << coul << "m";
+}
+
+void fond (const unsigned & coul) {
+    cout << "\033[" << coul + 10 << "m";
+}
+
 
 // affichage de la matrice sans les numéros de lignes / colonnes en haut / à gauche
 void  afficheMatriceV0 (const CMatrice & Mat) {
@@ -319,7 +322,7 @@ void editNv (CMatrice & mat){
 
 };
 
-//initialisation de la grille de jeu
+// Initialisation de la grille de jeu
 void initMat (CMatrice & mat, int level, const size_t & nbLignes = 10,
              const size_t & nbColonnes = 10,
              const unsigned & nbMax= KPlusGrandNombreDansLaMatrice){
@@ -351,6 +354,61 @@ void initMat (CMatrice & mat, int level, const size_t & nbLignes = 10,
     }
 }
 
+// On dessine le tableau (lignes, cellules)
+void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5){
+    // On récupère la taille de la fenêtre
+    nsGraphics::Vec2D windowSize;
+    windowSize = window.getWindowSize();
+    int wx = (windowSize.getX() - 640)/2;
+    int wy = (windowSize.getY() - 640)/4;
+
+    // On initialise les variables néscessaire pour faire le tableau
+    boardSize = board;
+    cellSize = cell;
+    gapSize = gap;
+    totalCellSize = cell + gap;
+    boardTopLeftX = 320 + wx - (board * totalCellSize) / 2;
+    boardTopLeftY = 200 + wy;
+
+    // On dessigne les lignes
+    for (int i = 0; i <= boardSize; ++i) {
+        int lineCoord = boardTopLeftX + i * totalCellSize;
+
+        // On dessine les lignes vertival
+        window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, boardTopLeftY + i * totalCellSize),
+                                nsGraphics::Vec2D(boardTopLeftX + boardSize * totalCellSize, boardTopLeftY + i * totalCellSize),
+                                nsGraphics::KWhite);
+
+        // On dessine les lignes horizontal
+        window << nsShape::Line(nsGraphics::Vec2D(lineCoord, boardTopLeftY),
+                                nsGraphics::Vec2D(lineCoord, boardTopLeftY + boardSize * totalCellSize),
+                                nsGraphics::KWhite);
+
+        // On dessine les cellules
+        for (int row = 0; row < boardSize; ++row) {
+            for (int col = 0; col < boardSize; ++col) {
+                int lineX = boardTopLeftX + col * totalCellSize + gapSize;
+                int lineY = boardTopLeftY + row * totalCellSize + gapSize;
+                switch (mat[row][col]) {
+                case 0:
+                    // Aucun chiffre, je laisse la cellule vide
+                    break;
+                case 1:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KBlue);
+                    break;
+                case 2:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KRed);
+                    break;
+                case 3:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KBlack);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+// On calcul les différents events (cliques de la souris, swap, ...)
 void events(MinGL &window, int& level, bool& fullscreen)
 { 
     // On récupère la taille de la fenêtre
@@ -358,10 +416,10 @@ void events(MinGL &window, int& level, bool& fullscreen)
     windowSize = window.getWindowSize();
     int wx = (windowSize.getX() - 640)/2;
     int wy = (windowSize.getY() - 640)/4;
+    int x, y;
+
     // On vérifie chaque évènement de la queue d'évènements
     while (window.getEventManager().hasEvent())
-
-
     {
         const nsEvent::Event_t actualEvent = window.getEventManager().pullEvent();
 
@@ -372,16 +430,13 @@ void events(MinGL &window, int& level, bool& fullscreen)
             // Il s'agit d'un mouvement de souris
             triPos.setX(actualEvent.eventData.moveData.x);
             triPos.setY(actualEvent.eventData.moveData.y);
-
             break;
-
         case nsEvent::EventType_t::MouseClick:
+
             // Il s'agit d'un click de souris
             triColor = (actualEvent.eventData.clickData.state ? nsGraphics::KWhite : nsGraphics::KBlack);
 
-            // On récupère la position de la souris
-            int x, y;
-
+            // On récupère la position de la souris en ignorant en trop le deuxième clique
             if (mouse_clicked == false){
                 x = triPos.getX();
                 y = triPos.getY();
@@ -391,6 +446,7 @@ void events(MinGL &window, int& level, bool& fullscreen)
                 mouse_clicked = false;
             }
 
+            // On cherche la position x et y du x afin de oui ou non exécuter un évènement
             if (y >=11+wy/10 && y <= 30+wy/10){
                 if (x >= 610+wx*2 && x <= 632+wx*2){
                     cout << "Vous quittez le jeu !" << endl << endl;
@@ -406,6 +462,8 @@ void events(MinGL &window, int& level, bool& fullscreen)
                     }
                 }
             }
+
+            // Level == 0 correspond au menu, on cherche la position de x et y afin de savoir quel niveau choisir
             if (level == 0){
                 if (x >= 285+wx && x <= 360+wx){
                     if (y >= 220+wy && y <= 230+wy){
@@ -428,8 +486,7 @@ void events(MinGL &window, int& level, bool& fullscreen)
             } else if (level !=0 && x >= 560+wx*2 && x <= 580+wx*2 && y >= 10+wy/10 && y <=30+wy/10){
                 cout << "Vous retournez au menu !" << endl;
                 level = 0;
-            } else {
-                if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalCellSize &&
+            } else if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalCellSize &&
                     y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize) {
 
                     // On calcule l'indice de la cellule
@@ -437,11 +494,22 @@ void events(MinGL &window, int& level, bool& fullscreen)
                     clickedRow = (x - boardTopLeftX) / totalCellSize;
                     ++clique;
                     cout << "Vous avez cliqué sur la cellule ligne " << clickedCol << ", colonne " << clickedRow << endl;
-                }
+                    if (clique == 1){
+                        FirstclickedCol = clickedCol;
+                        FirstclickedRow = clickedRow;
+                    } else if (clique == 2) {
+                        if (abs(FirstclickedRow - clickedRow) <= 1 && abs(FirstclickedCol - clickedCol) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer) {
+                            // On swap les deux cellules
+                            swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
+
+                            // On detecte et explose
+                            detectionExplosionUneBombeHorizontale(mat, score);
+                            detectionExplosionUneBombeVerticale(mat, score);
+                            clique = 0;
+                        } clique = 0;
+                    }
                 break;
             }
-
-
             break;
 
         default:
@@ -516,130 +584,17 @@ void dessiner(MinGL &window, int& level)
         window << nsShape::Triangle(nsGraphics::Vec2D(570+wx*2, 30+wy/10), nsGraphics::Vec2D(570+wx*2, 10+wy/10), nsGraphics::Vec2D(560+wx*2, 20+wy/10), nsGraphics::KWhite);
         window << nsShape::Line(nsGraphics::Vec2D(570+wx*2, 20+wy/10), nsGraphics::Vec2D(580+wx*2, 20+wy/10), nsGraphics::KWhite, 3.f);
 
-        if (level == 1) {
-            detectionExplosionUneBombeHorizontale(mat, score);
-            detectionExplosionUneBombeVerticale(mat, score);
-            if (clique == 1){
-                FirstclickedCol = clickedCol;
-                FirstclickedRow = clickedRow;
-            } else if (clique == 2) {
-            // test
-                cout << "SECOND CLIQUE" << endl;
-                if (abs(FirstclickedRow - clickedRow) <= 1 && abs(FirstclickedCol - clickedCol) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer) {
-                    swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
-                    clique = 0;
-            } clique = 0;
-         }
-            // afficheMatriceV2(mat);
-
-            boardSize = 5;
-            cellSize = 50;
-            gapSize = 5;  // Adjust this value for the desired gap size
-            totalCellSize = cellSize + gapSize;  // Including the gap
-            boardTopLeftX = 320 + wx - (boardSize * totalCellSize) / 2;
-            boardTopLeftY = 200 + wy;
-            for (int row = 0; row <= boardSize; ++row) {
-                int lineY = boardTopLeftY + row * totalCellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * totalCellSize, lineY), nsGraphics::KWhite);
-            }
-
-            for (int col = 0; col <= boardSize; ++col) {
-                int lineX = boardTopLeftX + col * totalCellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * totalCellSize), nsGraphics::KWhite);
-            }
-
-            for (int row = 0; row < boardSize; ++row) {
-                for (int col = 0; col < boardSize; ++col) {
-                    int lineX = boardTopLeftX + col * totalCellSize + gapSize;
-                    int lineY = boardTopLeftY + row * totalCellSize + gapSize;
-                    switch (mat[row][col]) {
-                    case 0:
-                        // Aucun chiffre, je laisse la cellule vide
-                        break;
-                    case 1:
-                        window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KBlue);
-                        break;
-                    case 2:
-                        window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KRed);
-                        break;
-                    case 3:
-                        window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KBlack);
-                        break;
-                    }
-                }
-            }
+        if (level == 1) {  
+            dessineBoard(window, 5, 50, 5);
         } else if (level == 2){
-            // Dessine les lignes des cellules
-            const int boardSize = 10;
-            const int cellSize = 30; // Ajuster la taille des cellules
-            const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centré en dessous de "Niveau 1"
-            const int boardTopLeftY = 200 + wy;
-
-            for (int row = 0; row <= boardSize; ++row)
-            {
-                int lineY = boardTopLeftY + row * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
-            }
-
-            for (int col = 0; col <= boardSize; ++col)
-            {
-                int lineX = boardTopLeftX + col * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
-            }
+            dessineBoard(window, 10, 30, 1);
         } else if (level == 3){
-            // Dessine les lignes des cellules
-            const int boardSize = 10;
-            const int cellSize = 30; // Ajuster la taille des cellules
-            const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centré en dessous de "Niveau 1"
-            const int boardTopLeftY = 200 + wy;
-
-            for (int row = 0; row <= boardSize; ++row)
-            {
-                int lineY = boardTopLeftY + row * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
-            }
-
-            for (int col = 0; col <= boardSize; ++col)
-            {
-                int lineX = boardTopLeftX + col * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
-            }
+            dessineBoard(window, 10, 30, 1);
         } else if (level == 4){
             // Dessine les lignes des cellules
-            const int boardSize = 10;
-            const int cellSize = 30; // Ajuster la taille des cellules
-            const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centré en dessous de "Niveau 1"
-            const int boardTopLeftY = 200 + wy;
-
-            for (int row = 0; row <= boardSize; ++row)
-            {
-                int lineY = boardTopLeftY + row * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
-            }
-
-            for (int col = 0; col <= boardSize; ++col)
-            {
-                int lineX = boardTopLeftX + col * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
-            }
+            dessineBoard(window, 10, 30, 1);
         } else if (level == 5){
-            // Dessine les lignes des cellules
-            const int boardSize = 10;
-            const int cellSize = 30; // Ajuster la taille des cellules
-            const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centré en dessous de "Niveau 1"
-            const int boardTopLeftY = 200 + wy;
-
-            for (int row = 0; row <= boardSize; ++row)
-            {
-                int lineY = boardTopLeftY + row * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
-            }
-
-            for (int col = 0; col <= boardSize; ++col)
-            {
-                int lineX = boardTopLeftX + col * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
-            }
+            dessineBoard(window, 10, 30, 1);
         }
     }
 }
