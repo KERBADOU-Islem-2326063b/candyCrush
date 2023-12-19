@@ -591,7 +591,6 @@ void dessiner(MinGL &window, int& level)
         } else if (level == 3){
             dessineBoard(window, 10, 30, 1);
         } else if (level == 4){
-            // Dessine les lignes des cellules
             dessineBoard(window, 10, 30, 1);
         } else if (level == 5){
             dessineBoard(window, 10, 30, 1);
