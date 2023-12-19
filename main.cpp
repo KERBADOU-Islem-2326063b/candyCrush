@@ -34,9 +34,12 @@ int FirstclickedCol = 0;
 int FirstclickedRow = 0;
 int clickedCol = 0;
 int clickedRow = 0;
+int essai = 10;
+bool nvEssai = true;
 bool mouse_clicked = false;
 bool initMats = false;
 unsigned score (0);
+unsigned neededScore (0);
 CMatrice mat;
 
 const unsigned KReset   (0);
@@ -179,15 +182,10 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
             if (combienALaSuite >= 3){
                 auMoinsUneExplosion = true;
                 score += combienALaSuite;
-                /*cout << "on a une suite en position ligne = " << i+1
-                     << "; colonne = " << j+1
-                     << "; sur  " << combienALaSuite << " cases" << endl;
-                cout << string (20, '-') << endl << "matrice avant suppression" << endl;
-                afficheMatriceV2(mat);*/
                 explosionUneBombeHorizontale (mat, i, j, combienALaSuite);
-                //cout << string (20, '-') << endl << "matrice après suppression" << endl;
-                //afficheMatriceV2(mat);
-
+            } else  if (nvEssai){
+                --essai;
+                nvEssai = false;
             }
         }
     }
@@ -226,9 +224,9 @@ bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
                 auMoinsUneExplosion = true;
                 score += combienALaSuite;
                 explosionUneBombeVerticale (mat, i, j, combienALaSuite);
-                //cout << string (20, '-') << endl << "matrice après suppression" << endl;
-                //afficheMatriceV2(mat);
 
+            } else if (nvEssai){
+                --essai;
             }
         }
     }
@@ -414,6 +412,9 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5){
                 case 3:
                     window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KBlack);
                     break;
+                case 4:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KYellow);
+                    break;
                 }
             }
         }
@@ -517,6 +518,7 @@ void events(MinGL &window, int& level, bool& fullscreen)
                         // On detecte et explose
                         detectionExplosionUneBombeHorizontale(mat, score);
                         detectionExplosionUneBombeVerticale(mat, score);
+                        nvEssai = true;
                         clique = 0;
                     } clique = 0;
                 }
@@ -577,12 +579,9 @@ void dessiner(MinGL &window, int& level)
     } else {
         // On dessine le score
         window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Score : " + to_string(score), nsGraphics::KWhite);
-        if (level == 1 && score >= 12){
-            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 140+wy), "VOUS AVEZ GAGNE !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 160+wy), "VOUS POUVEZ CONTINUER A JOUER", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        }
+
+        // On dessine le nombre d'essai
+        window << nsGui::Text(nsGraphics::Vec2D(20, 40), "Essai(s) : " + to_string(essai), nsGraphics::KWhite);
 
         // On dessine le nom du nouveau (ex: niveau 1)
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 100+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
@@ -592,27 +591,52 @@ void dessiner(MinGL &window, int& level)
         window << nsShape::Triangle(nsGraphics::Vec2D(570+wx*2, 30+wy/10), nsGraphics::Vec2D(570+wx*2, 10+wy/10), nsGraphics::Vec2D(560+wx*2, 20+wy/10), nsGraphics::KWhite);
         window << nsShape::Line(nsGraphics::Vec2D(570+wx*2, 20+wy/10), nsGraphics::Vec2D(580+wx*2, 20+wy/10), nsGraphics::KWhite, 3.f);
 
+        // Si le joueur a atteint le score demandé, alors il a gagné le niveau
+        if (score >= neededScore){
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 140+wy), "VOUS AVEZ GAGNE !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 160+wy), "VOUS POUVEZ CONTINUER A JOUER", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        } else if (essai == 0){
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 140+wy), "VOUS AVEZ PERDU ...", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 160+wy), "C'EST PAS GRAVE, VOUS POUVEZ RECOMMENCER !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        }
+
         if (level == 1) {
             if (initMats == false){
                 initMat(mat, level, 5, 5, 9);
                 initMats = true;
+                neededScore = 16;
             } dessineBoard(window, 5, 50, 5);
         } else if (level == 2){
             if (initMats == false){
-                initMat(mat, level, 7, 7, 9);
-            } dessineBoard(window, 7, 30, 2);
+                initMat(mat, level, 5, 5, 9);
+                initMats = true;
+                neededScore = 30;
+            } dessineBoard(window, 7, 50, 5);
         } else if (level == 3){
             if (initMats == false){
-                initMat(mat, level, 10, 10, 9);
-            } dessineBoard(window, 7, 30, 1);
+                initMat(mat, level, 5, 5, 9);
+                initMats = true;
+                neededScore = 40;
+            } dessineBoard(window, 10, 30, 1);
+            if (initMats == false){
+                initMat(mat, level, 5, 5, 9);
+                initMats = true;
+                neededScore = 50;
+            }
         } else if (level == 4){
             if (initMats == false){
-                initMat(mat, level, 10, 10, 9);
-            } dessineBoard(window, 7, 30, 1);
+                initMat(mat, level, 5, 5, 9);
+                initMats = true;
+            }
         } else if (level == 5){
             if (initMats == false){
-                initMat(mat, level, 10, 10, 9);
-            } dessineBoard(window, 7, 30, 1);
+                initMat(mat, level, 5, 5, 9);
+                initMats = true;
+            } dessineBoard(window, 10, 30, 1);
         }
     }
 }
