@@ -74,14 +74,14 @@ void  afficheMatriceV0 (const CMatrice & Mat) {
     for (size_t i = 0; i < Mat.size(); ++i){
         for(size_t j = 0; j < Mat[i].size(); ++j){
             switch(Mat[i][j]){
-                case 1: couleur(KReset); break;
-                case 2: couleur(KNoir); break;
-                case 3: couleur(KRouge); break;
-                case 4: couleur(KJaune); break;
-                case 5: couleur(KBleu); break;
-                case 6: couleur(KMagenta); break;
-                case 7: couleur(KVert); break;
-                default: couleur(KCyan); break;
+            case 1: couleur(KReset); break;
+            case 2: couleur(KNoir); break;
+            case 3: couleur(KRouge); break;
+            case 4: couleur(KJaune); break;
+            case 5: couleur(KBleu); break;
+            case 6: couleur(KMagenta); break;
+            case 7: couleur(KVert); break;
+            default: couleur(KCyan); break;
             }
             cout << Mat[i][j] << " ";
             couleur(KReset);
@@ -95,14 +95,14 @@ void  afficheMatriceV1 (const CMatrice & Mat) {
     for (size_t i = 0; i < Mat.size(); ++i){
         for(size_t j = 0; j < Mat[i].size(); ++j){
             switch(Mat[i][j]){
-                case 1: couleur(KReset); break;
-                case 2: couleur(KNoir); break;
-                case 3: couleur(KRouge); break;
-                case 4: couleur(KJaune); break;
-                case 5: couleur(KBleu); break;
-                case 6: couleur(KMagenta); break;
-                case 7: couleur(KVert); break;
-                default: couleur(KCyan); break;
+            case 1: couleur(KReset); break;
+            case 2: couleur(KNoir); break;
+            case 3: couleur(KRouge); break;
+            case 4: couleur(KJaune); break;
+            case 5: couleur(KBleu); break;
+            case 6: couleur(KMagenta); break;
+            case 7: couleur(KVert); break;
+            default: couleur(KCyan); break;
             }
             if (Mat[i][j] == KAIgnorer) fond(KRouge);
             cout << Mat[i][j] << " ";
@@ -128,14 +128,14 @@ void afficheMatriceV2 (const CMatrice & Mat, const unsigned & score = 0,
         cout << setw(2) << i + 1 << " | ";
         for(size_t j = 0; j < Mat[i].size(); ++j){
             switch(Mat[i][j]){
-                case 1: couleur(KReset); break;
-                case 2: couleur(KVert); break;
-                case 3: couleur(KRouge); break;
-                case 4: couleur(KJaune); break;
-                case 5: couleur(KBleu); break;
-                case 6: couleur(KMagenta); break;
-                case 7: couleur(KNoir); break;
-                default: couleur(KCyan); break;
+            case 1: couleur(KReset); break;
+            case 2: couleur(KVert); break;
+            case 3: couleur(KRouge); break;
+            case 4: couleur(KJaune); break;
+            case 5: couleur(KBleu); break;
+            case 6: couleur(KMagenta); break;
+            case 7: couleur(KNoir); break;
+            default: couleur(KCyan); break;
             }
             if (i == rowSelect && j == colSelect && colSelect != 99 && rowSelect != 99) fond(KBlanc);
             if (Mat[i][j] == KAIgnorer) fond(KRouge);
@@ -150,7 +150,7 @@ void afficheMatriceV2 (const CMatrice & Mat, const unsigned & score = 0,
 
 //fait descendre toutes les cases d'une unité suite à une explosition
 void explosionUneBombeHorizontale (CMatrice & mat, const size_t & numLigne,
-                                    const size_t & numColonne, const size_t & combien){
+                                  const size_t & numColonne, const size_t & combien){
     for(unsigned k = 0; k < combien; ++k){
         mat[numLigne][numColonne+k] = KAIgnorer;
         for(unsigned j = numLigne; j > 0; --j){
@@ -198,7 +198,7 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
 
 
 void explosionUneBombeVerticale (CMatrice & mat, const size_t & numLigne,
-                                    const size_t & numColonne, const size_t & combien){
+                                const size_t & numColonne, const size_t & combien){
     for(unsigned k = 0; k < combien; ++k){
         mat[numLigne+k][numColonne] = KAIgnorer;
         for(unsigned j = numLigne; j > 0; --j){
@@ -322,37 +322,49 @@ void editNv (CMatrice & mat){
 
 };
 
-// Initialisation de la grille de jeu
-void initMat (CMatrice & mat, int level, const size_t & nbLignes = 10,
-             const size_t & nbColonnes = 10,
-             const unsigned & nbMax= KPlusGrandNombreDansLaMatrice){
-
-    while (true) {
-        if (level == 1){
-            string lvlName;
-            importNv(mat, "1.txt");
-            break;
-
-        } else if (level == 6){
-            mat.resize(nbLignes);
-            for (size_t i = 0; i < nbLignes; ++i){
-                mat[i].resize(nbColonnes);
-                for(size_t j = 0; j < nbColonnes; ++j){
-                    mat[i][j] = rand() % nbMax + 1;
-                }
+void initMat(CMatrice &mat, int level, const size_t &nbLignes = 10,
+             const size_t &nbColonnes = 10,
+             const unsigned &nbMax = KPlusGrandNombreDansLaMatrice) {
+    string lvlName;
+    switch (level)
+    {
+    case 1:
+        importNv(mat, "1.txt");
+        break;
+    case 2:
+        importNv(mat, "2.txt");
+        break;
+    case 3:
+        importNv(mat, "3.txt");
+        break;
+    case 4:
+        importNv(mat, "4.txt");
+        break;
+    case 5:
+        importNv(mat, "5.txt");
+        break;
+    case 6:
+        mat.resize(nbLignes);
+        for (size_t i = 0; i < nbLignes; ++i)
+        {
+            mat[i].resize(nbColonnes);
+            for (size_t j = 0; j < nbColonnes; ++j)
+            {
+                mat[i][j] = rand() % nbMax + 1;
             }
-            break;
-
-        } else if (level == 7){
-            cout << "Entrée dans l'éditeur de niveaux..." << endl;
-            editNv(mat);
-            break;
-        } else {
-            cout << "Mauvais choix" << endl;
-            continue;
         }
+        break;
+    case 7:
+        cout << "Entrée dans l'éditeur de niveaux..." << endl;
+        editNv(mat);
+        break;
+    default:
+        cout << "Mauvais choix" << endl;
+        break;
     }
 }
+
+
 
 // On dessine le tableau (lignes, cellules)
 void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5){
@@ -410,13 +422,13 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5){
 
 // On calcul les différents events (cliques de la souris, swap, ...)
 void events(MinGL &window, int& level, bool& fullscreen)
-{ 
+{
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
     windowSize = window.getWindowSize();
     int wx = (windowSize.getX() - 640)/2;
     int wy = (windowSize.getY() - 640)/4;
-    int x, y;
+    int x, y = 0;
 
     // On vérifie chaque évènement de la queue d'évènements
     while (window.getEventManager().hasEvent())
@@ -487,27 +499,27 @@ void events(MinGL &window, int& level, bool& fullscreen)
                 cout << "Vous retournez au menu !" << endl;
                 level = 0;
             } else if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalCellSize &&
-                    y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize) {
+                       y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize) {
 
-                    // On calcule l'indice de la cellule
-                    clickedCol = (y - boardTopLeftY) / totalCellSize;
-                    clickedRow = (x - boardTopLeftX) / totalCellSize;
-                    ++clique;
-                    cout << "Vous avez cliqué sur la cellule ligne " << clickedCol << ", colonne " << clickedRow << endl;
-                    if (clique == 1){
-                        FirstclickedCol = clickedCol;
-                        FirstclickedRow = clickedRow;
-                    } else if (clique == 2) {
-                        if (abs(FirstclickedRow - clickedRow) <= 1 && abs(FirstclickedCol - clickedCol) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer) {
-                            // On swap les deux cellules
-                            swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
+                // On calcule l'indice de la cellule
+                clickedCol = (y - boardTopLeftY) / totalCellSize;
+                clickedRow = (x - boardTopLeftX) / totalCellSize;
+                ++clique;
+                cout << "Vous avez cliqué sur la cellule ligne " << clickedCol << ", colonne " << clickedRow << endl;
+                if (clique == 1){
+                    FirstclickedCol = clickedCol;
+                    FirstclickedRow = clickedRow;
+                } else if (clique == 2) {
+                    if (abs(FirstclickedRow - clickedRow) <= 1 && abs(FirstclickedCol - clickedCol) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer) {
+                        // On swap les deux cellules
+                        swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
 
-                            // On detecte et explose
-                            detectionExplosionUneBombeHorizontale(mat, score);
-                            detectionExplosionUneBombeVerticale(mat, score);
-                            clique = 0;
-                        } clique = 0;
-                    }
+                        // On detecte et explose
+                        detectionExplosionUneBombeHorizontale(mat, score);
+                        detectionExplosionUneBombeVerticale(mat, score);
+                        clique = 0;
+                    } clique = 0;
+                }
                 break;
             }
             break;
@@ -522,10 +534,6 @@ void events(MinGL &window, int& level, bool& fullscreen)
 
 void dessiner(MinGL &window, int& level)
 {
-    if (initMats == false){
-        initMat(mat, 1, 10, 10, 9);
-        initMats = true;
-    }
 
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
@@ -545,7 +553,7 @@ void dessiner(MinGL &window, int& level)
     window << nsShape::Line(nsGraphics::Vec2D(604+wx*2, 12+wy/10), nsGraphics::Vec2D(604+wx*2, 28+wy/10), nsGraphics::KWhite, 3.f);
 
 
-    if (level == 0){   
+    if (level == 0){
         window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Fait par : KERBADOU Islem, ODERZO Flavio", nsGraphics::KWhite);
         window << nsGui::Text(nsGraphics::Vec2D(20, 40), "FREMENTIN Felix, BLABLA Hugo", nsGraphics::KWhite);
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Candy Crush", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
@@ -584,16 +592,27 @@ void dessiner(MinGL &window, int& level)
         window << nsShape::Triangle(nsGraphics::Vec2D(570+wx*2, 30+wy/10), nsGraphics::Vec2D(570+wx*2, 10+wy/10), nsGraphics::Vec2D(560+wx*2, 20+wy/10), nsGraphics::KWhite);
         window << nsShape::Line(nsGraphics::Vec2D(570+wx*2, 20+wy/10), nsGraphics::Vec2D(580+wx*2, 20+wy/10), nsGraphics::KWhite, 3.f);
 
-        if (level == 1) {  
-            dessineBoard(window, 5, 50, 5);
+        if (level == 1) {
+            if (initMats == false){
+                initMat(mat, level, 5, 5, 9);
+                initMats = true;
+            } dessineBoard(window, 5, 50, 5);
         } else if (level == 2){
-            dessineBoard(window, 10, 30, 1);
+            if (initMats == false){
+                initMat(mat, level, 7, 7, 9);
+            } dessineBoard(window, 7, 30, 2);
         } else if (level == 3){
-            dessineBoard(window, 10, 30, 1);
+            if (initMats == false){
+                initMat(mat, level, 10, 10, 9);
+            } dessineBoard(window, 7, 30, 1);
         } else if (level == 4){
-            dessineBoard(window, 10, 30, 1);
+            if (initMats == false){
+                initMat(mat, level, 10, 10, 9);
+            } dessineBoard(window, 7, 30, 1);
         } else if (level == 5){
-            dessineBoard(window, 10, 30, 1);
+            if (initMats == false){
+                initMat(mat, level, 10, 10, 9);
+            } dessineBoard(window, 7, 30, 1);
         }
     }
 }
