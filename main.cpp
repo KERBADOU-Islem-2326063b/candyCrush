@@ -595,7 +595,7 @@ void dessiner(MinGL &window, int& level)
         if (score >= neededScore){
             window << nsGui::Text(nsGraphics::Vec2D(330+wx, 140+wy), "VOUS AVEZ GAGNE !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 160+wy), "VOUS POUVEZ CONTINUER A JOUER", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 160+wy), "VOUS POUVEZ RECOMMENCER !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         } else if (essai == 0 && score < neededScore){
             window << nsGui::Text(nsGraphics::Vec2D(330+wx, 140+wy), "VOUS AVEZ PERDU ...", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
@@ -604,32 +604,32 @@ void dessiner(MinGL &window, int& level)
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         }
 
-        if (level == 1 && essai != 0) {
+        if (level == 1 && essai != 0 && score < neededScore) {
             if (initMats == false){
                 initMat(mat, level, 5, 5, 9);
                 initMats = true;
                 essai = 5;
                 neededScore = 16;
             } dessineBoard(window, 5, 50, 5);
-        } else if (level == 2 && essai != 0){
+        } else if (level == 2 && essai != 0 && score < neededScore){
             if (initMats == false){
                 initMat(mat, level, 5, 5, 9);
                 initMats = true;
                 neededScore = 30;
             } dessineBoard(window, 7, 50, 5);
-        } else if (level == 3 && essai != 0){
+        } else if (level == 3 && essai != 0 && score < neededScore){
             if (initMats == false){
                 initMat(mat, level, 5, 5, 9);
                 initMats = true;
                 neededScore = 40;
             } dessineBoard(window, 10, 30, 1);
-        } else if (level == 4 && essai != 0){
+        } else if (level == 4 && essai != 0 && score < neededScore){
             if (initMats == false){
                 initMat(mat, level, 5, 5, 9);
                 initMats = true;
                 neededScore = 50;
             } dessineBoard(window, 10, 30, 1);
-        } else if (level == 5 && essai != 0){
+        } else if (level == 5 && essai != 0 && score < neededScore){
             if (initMats == false){
                 initMat(mat, level, 5, 5, 9);
                 initMats = true;
