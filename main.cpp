@@ -7,12 +7,12 @@
 #include <thread>
 #include <fstream>
 
-#include "../MinGL2_IUT_AIX/include/mingl/mingl.h"
-#include "../MinGL2_IUT_AIX/include/mingl/gui/text.h"
-#include "../MinGL2_IUT_AIX/include/mingl/shape/line.h"
-#include "../MinGL2_IUT_AIX/include/mingl/shape/triangle.h"
-#include "../MinGL2_IUT_AIX/include/mingl/shape/rectangle.h"
-#include "../MinGL2_IUT_AIX/include/mingl/shape/circle.h"
+#include "MinGL2_IUT_AIX/include/mingl/mingl.h"
+#include "MinGL2_IUT_AIX/include/mingl/gui/text.h"
+#include "MinGL2_IUT_AIX/include/mingl/shape/line.h"
+#include "MinGL2_IUT_AIX/include/mingl/shape/triangle.h"
+#include "MinGL2_IUT_AIX/include/mingl/shape/rectangle.h"
+#include "MinGL2_IUT_AIX/include/mingl/shape/circle.h"
 
 using namespace std;
 
@@ -39,7 +39,7 @@ bool nvEssai = true;
 bool mouse_clicked = false;
 bool initMats = false;
 unsigned score (0);
-unsigned neededScore (0);
+unsigned neededScore (1);
 CMatrice mat;
 
 const unsigned KReset   (0);
@@ -597,45 +597,43 @@ void dessiner(MinGL &window, int& level)
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
             window << nsGui::Text(nsGraphics::Vec2D(330+wx, 160+wy), "VOUS POUVEZ CONTINUER A JOUER", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        } else if (essai == 0){
+        } else if (essai == 0 && score < neededScore){
             window << nsGui::Text(nsGraphics::Vec2D(330+wx, 140+wy), "VOUS AVEZ PERDU ...", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
             window << nsGui::Text(nsGraphics::Vec2D(330+wx, 160+wy), "C'EST PAS GRAVE, VOUS POUVEZ RECOMMENCER !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         }
 
-        if (level == 1) {
+        if (level == 1 && essai != 0) {
             if (initMats == false){
                 initMat(mat, level, 5, 5, 9);
                 initMats = true;
+                essai = 5;
                 neededScore = 16;
             } dessineBoard(window, 5, 50, 5);
-        } else if (level == 2){
+        } else if (level == 2 && essai != 0){
             if (initMats == false){
                 initMat(mat, level, 5, 5, 9);
                 initMats = true;
                 neededScore = 30;
             } dessineBoard(window, 7, 50, 5);
-        } else if (level == 3){
+        } else if (level == 3 && essai != 0){
             if (initMats == false){
                 initMat(mat, level, 5, 5, 9);
                 initMats = true;
                 neededScore = 40;
             } dessineBoard(window, 10, 30, 1);
+        } else if (level == 4 && essai != 0){
             if (initMats == false){
                 initMat(mat, level, 5, 5, 9);
                 initMats = true;
                 neededScore = 50;
-            }
-        } else if (level == 4){
+            } dessineBoard(window, 10, 30, 1);
+        } else if (level == 5 && essai != 0){
             if (initMats == false){
                 initMat(mat, level, 5, 5, 9);
                 initMats = true;
-            }
-        } else if (level == 5){
-            if (initMats == false){
-                initMat(mat, level, 5, 5, 9);
-                initMats = true;
+                neededScore = 60;
             } dessineBoard(window, 10, 30, 1);
         }
     }
