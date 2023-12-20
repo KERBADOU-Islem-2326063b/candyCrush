@@ -309,15 +309,11 @@ void editNv (CMatrice & mat){
             mat[i][j] = nb;
         }
     }
-
     afficheMatriceV2(mat);
     char choix;
     cout << endl << "Voici votre magnifique niveau, voulez-vous le sauvegarder? (y/n)" << endl;
     cin >> choix;
-
     if (choix == 'y') saveNv(mat, nomNv);
-
-
 };
 
 void initMat(CMatrice &mat, int level, const size_t &nbLignes = 10,
@@ -366,6 +362,7 @@ void initMat(CMatrice &mat, int level, const size_t &nbLignes = 10,
 
 // On dessine le tableau (lignes, cellules)
 void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5){
+
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
     windowSize = window.getWindowSize();
@@ -515,7 +512,7 @@ void events(MinGL &window, int& level, bool& fullscreen)
                             && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow]
                             && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer) {
 
-                        // On swap les deux cellules
+                        // On échange les deux cellules
                         swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
 
                         // On detecte et explose
@@ -524,10 +521,6 @@ void events(MinGL &window, int& level, bool& fullscreen)
                         nvEssai = true;
                         clique = 0;
                     } clique = 0;
-                } else if ((x >= 270 && x < 392 && y >= 300 && y <= 285 &&
-                            (essai == 0 && score < neededScore)) || score >= neededScore){
-                    cout << "OK" << endl;
-                    initMats = false;
                 }
                 break;
             }
@@ -540,7 +533,7 @@ void events(MinGL &window, int& level, bool& fullscreen)
     }
 }
 
-
+// Fonction utilisant MinGL pour dessiner
 void dessiner(MinGL &window, int& level)
 {
 
@@ -561,7 +554,7 @@ void dessiner(MinGL &window, int& level)
     window << nsShape::Line(nsGraphics::Vec2D(588+wx*2, 28+wy/10), nsGraphics::Vec2D(604+wx*2, 28+wy/10), nsGraphics::KWhite, 3.f);
     window << nsShape::Line(nsGraphics::Vec2D(604+wx*2, 12+wy/10), nsGraphics::Vec2D(604+wx*2, 28+wy/10), nsGraphics::KWhite, 3.f);
 
-
+    // On dessine le menu
     if (level == 0){
         window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Fait par : KERBADOU Islem, ODERZO Flavio", nsGraphics::KWhite);
         window << nsGui::Text(nsGraphics::Vec2D(20, 40), "FROMENTIN Felix, GOUGEON Hugo", nsGraphics::KWhite);
@@ -608,9 +601,10 @@ void dessiner(MinGL &window, int& level)
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
             window << nsGui::Text(nsGraphics::Vec2D(330+wx, 210+wy), "VOUS POUVEZ RECOMMENCER !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 300+wy), "CLIQUEZ ICI !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 300+wy), "CLIQUZ ICI !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
+        // Si le joueur n'a plus d'essais et que il n'a pas atteint le score demandé, alors il a perdu
         } else if (essai == 0 && score < neededScore){
             window << nsGui::Text(nsGraphics::Vec2D(330+wx, 180+wy), "VOUS AVEZ PERDU ...", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
@@ -620,6 +614,7 @@ void dessiner(MinGL &window, int& level)
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         }
 
+        // On dessine le niveau choisi
         if (level == 1 && essai != 0 && score < neededScore) {
             if (initMats == false){
                 score = 0;
@@ -674,6 +669,7 @@ void dessiner(MinGL &window, int& level)
     }
 }
 
+// Fonction pour dessiner et animer la souris
 void souris(MinGL &window){
     // On dessine la souris et l'anime en direct
     window << nsShape::Triangle(triPos, triPos + nsGraphics::Vec2D(10, 10), nsGraphics::Vec2D(triPos.getX(), triPos.getY()+16), triColor);
@@ -681,7 +677,7 @@ void souris(MinGL &window){
 }
 
 
-
+// Fonction principale du programme
 int main() {
     // Initialise le système
     int level = 0;
@@ -709,9 +705,6 @@ int main() {
 
         // On finit la frame en cours
         window.finishFrame();
-
-        // On vide la queue d'évènements
-        // window.getEventManager().clearEvents();
 
         // On attend un peu pour limiter le framerate et soulager le CPU
         this_thread::sleep_for(chrono::milliseconds(1000 / FPS_LIMIT) - chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now() - start));
