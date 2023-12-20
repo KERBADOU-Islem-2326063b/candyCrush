@@ -502,6 +502,13 @@ void events(MinGL &window, int& level, bool& fullscreen)
                 // On calcule l'indice de la cellule
                 clickedCol = (y - boardTopLeftY) / totalCellSize;
                 clickedRow = (x - boardTopLeftX) / totalCellSize;
+
+                // Si le joueur souhaite recommencer le niveau, on recommence une nouvelle matrice
+                if ((x >= 270 && x <= 392 && y >= 300 && y <= 285 &&
+                     (essai == 0 && score < neededScore)) || score >= neededScore){
+                                   cout << "OK" << endl;
+                                   initMats = false;
+                }
                 ++clique;
                 cout << "Vous avez cliqué sur la cellule ligne " << clickedCol << ", colonne " << clickedRow << endl;
                 if (clique == 1){
@@ -521,7 +528,7 @@ void events(MinGL &window, int& level, bool& fullscreen)
                         nvEssai = true;
                         clique = 0;
                     } clique = 0;
-                }
+               }
                 break;
             }
             break;
@@ -601,7 +608,7 @@ void dessiner(MinGL &window, int& level)
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
             window << nsGui::Text(nsGraphics::Vec2D(330+wx, 210+wy), "VOUS POUVEZ RECOMMENCER !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 300+wy), "CLIQUZ ICI !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 300+wy), "CLIQUEZ ICI !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
         // Si le joueur n'a plus d'essais et que il n'a pas atteint le score demandé, alors il a perdu
