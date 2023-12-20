@@ -15,6 +15,8 @@
 #include "../MinGL2_IUT_AIX/include/mingl/shape/circle.h"
 
 using namespace std;
+using namespace std::this_thread;
+using namespace std::chrono;
 
 
 nsGraphics::Vec2D triPos;
@@ -352,7 +354,7 @@ void initMat (CMatrice & mat, int level, const size_t & nbLignes = 10,
 }
 
 void events(MinGL &window, int& level, bool& fullscreen)
-{ 
+{
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
     windowSize = window.getWindowSize();
@@ -477,7 +479,7 @@ void dessiner(MinGL &window, int& level)
     window << nsShape::Line(nsGraphics::Vec2D(604+wx*2, 12+wy/10), nsGraphics::Vec2D(604+wx*2, 28+wy/10), nsGraphics::KWhite, 3.f);
 
 
-    if (level == 0){   
+    if (level == 0){
         window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Fait par : KERBADOU Islem, ODERZO Flavio", nsGraphics::KWhite);
         window << nsGui::Text(nsGraphics::Vec2D(20, 40), "FREMENTIN Felix, BLABLA Hugo", nsGraphics::KWhite);
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Candy Crush", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
@@ -523,9 +525,8 @@ void dessiner(MinGL &window, int& level)
                 FirstclickedCol = clickedCol;
                 FirstclickedRow = clickedRow;
             } else if (clique == 2) {
-            // test
                 cout << "SECOND CLIQUE" << endl;
-                if (abs(FirstclickedRow - clickedRow) <= 1 && abs(FirstclickedCol - clickedCol) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer) {
+                if (abs(FirstclickedRow - clickedRow) <= 1 && abs(FirstclickedCol - clickedCol) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer) {
                     swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
                     clique = 0;
             } clique = 0;
@@ -534,12 +535,12 @@ void dessiner(MinGL &window, int& level)
 
             boardSize = 5;
             cellSize = 50;
-            gapSize = 5;  // Adjust this value for the desired gap size
-            totalCellSize = cellSize + gapSize;  // Including the gap
+            gapSize = 5;
+            totalCellSize = cellSize + gapSize;
             boardTopLeftX = 320 + wx - (boardSize * totalCellSize) / 2;
             boardTopLeftY = 200 + wy;
             for (int row = 0; row <= boardSize; ++row) {
-                int lineY = boardTopLeftY + row * totalCellSize;
+                int lineY = boardTopLeftY + row * totalCellSize;         
                 window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * totalCellSize, lineY), nsGraphics::KWhite);
             }
 
