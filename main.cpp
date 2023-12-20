@@ -7,50 +7,21 @@
 #include <thread>
 #include <fstream>
 
-#include "../MinGL2_IUT_AIX/include/mingl/mingl.h"
-#include "../MinGL2_IUT_AIX/include/mingl/gui/text.h"
-#include "../MinGL2_IUT_AIX/include/mingl/shape/line.h"
-#include "../MinGL2_IUT_AIX/include/mingl/shape/triangle.h"
-#include "../MinGL2_IUT_AIX/include/mingl/shape/rectangle.h"
-#include "../MinGL2_IUT_AIX/include/mingl/shape/circle.h"
+#include "MinGL2_IUT_AIX/include/mingl/mingl.h"
+#include "MinGL2_IUT_AIX/include/mingl/gui/text.h"
+#include "MinGL2_IUT_AIX/include/mingl/shape/line.h"
+#include "MinGL2_IUT_AIX/include/mingl/shape/triangle.h"
+#include "MinGL2_IUT_AIX/include/mingl/shape/rectangle.h"
+#include "MinGL2_IUT_AIX/include/mingl/shape/circle.h"
 
 using namespace std;
-using namespace std::this_thread;
-using namespace std::chrono;
 
-
-nsGraphics::Vec2D triPos;
-nsGraphics::RGBAcolor triColor = nsGraphics::KWhite;
-
-void clearScreen () {
-    cout << "\033[H\033[2J";
-}
-
-const unsigned KReset   (0);
-const unsigned KNoir    (30);
-const unsigned KRouge   (31);
-const unsigned KVert    (32);
-const unsigned KJaune   (33);
-const unsigned KBleu    (34);
-const unsigned KMagenta (35);
-const unsigned KCyan    (36);
-const unsigned KBlanc   (37);
-
-void couleur (const unsigned & coul) {
-    cout << "\033[" << coul << "m";
-}
-
-void fond (const unsigned & coul) {
-    cout << "\033[" << coul + 10 << "m";
-}
-
+// Initialisation des variables utilisées
 
 typedef unsigned short contenueDUneCase;
 typedef vector <contenueDUneCase> CVLigne; // un type représentant une ligne de la grille
 typedef vector <CVLigne> CMatrice; // un type représentant la grille
 
-const contenueDUneCase KAIgnorer = 0;
-const contenueDUneCase KPlusGrandNombreDansLaMatrice = 4;
 
 int boardSize;
 int cellSize;
@@ -63,24 +34,57 @@ int FirstclickedCol = 0;
 int FirstclickedRow = 0;
 int clickedCol = 0;
 int clickedRow = 0;
+int essai = 10;
+bool nvEssai = true;
 bool mouse_clicked = false;
 bool initMats = false;
 unsigned score (0);
+unsigned neededScore (1);
 CMatrice mat;
+
+const unsigned KReset   (0);
+const unsigned KNoir    (30);
+const unsigned KRouge   (31);
+const unsigned KVert    (32);
+const unsigned KJaune   (33);
+const unsigned KBleu    (34);
+const unsigned KMagenta (35);
+const unsigned KCyan    (36);
+const unsigned KBlanc   (37);
+
+const contenueDUneCase KAIgnorer = 0;
+const contenueDUneCase KPlusGrandNombreDansLaMatrice = 4;
+
+nsGraphics::Vec2D triPos;
+nsGraphics::RGBAcolor triColor = nsGraphics::KWhite;
+
+void clearScreen () {
+    cout << "\033[H\033[2J";
+}
+
+
+void couleur (const unsigned & coul) {
+    cout << "\033[" << coul << "m";
+}
+
+void fond (const unsigned & coul) {
+    cout << "\033[" << coul + 10 << "m";
+}
+
 
 // affichage de la matrice sans les numéros de lignes / colonnes en haut / à gauche
 void  afficheMatriceV0 (const CMatrice & Mat) {
     for (size_t i = 0; i < Mat.size(); ++i){
         for(size_t j = 0; j < Mat[i].size(); ++j){
             switch(Mat[i][j]){
-                case 1: couleur(KReset); break;
-                case 2: couleur(KNoir); break;
-                case 3: couleur(KRouge); break;
-                case 4: couleur(KJaune); break;
-                case 5: couleur(KBleu); break;
-                case 6: couleur(KMagenta); break;
-                case 7: couleur(KVert); break;
-                default: couleur(KCyan); break;
+            case 1: couleur(KReset); break;
+            case 2: couleur(KNoir); break;
+            case 3: couleur(KRouge); break;
+            case 4: couleur(KJaune); break;
+            case 5: couleur(KBleu); break;
+            case 6: couleur(KMagenta); break;
+            case 7: couleur(KVert); break;
+            default: couleur(KCyan); break;
             }
             cout << Mat[i][j] << " ";
             couleur(KReset);
@@ -94,14 +98,14 @@ void  afficheMatriceV1 (const CMatrice & Mat) {
     for (size_t i = 0; i < Mat.size(); ++i){
         for(size_t j = 0; j < Mat[i].size(); ++j){
             switch(Mat[i][j]){
-                case 1: couleur(KReset); break;
-                case 2: couleur(KNoir); break;
-                case 3: couleur(KRouge); break;
-                case 4: couleur(KJaune); break;
-                case 5: couleur(KBleu); break;
-                case 6: couleur(KMagenta); break;
-                case 7: couleur(KVert); break;
-                default: couleur(KCyan); break;
+            case 1: couleur(KReset); break;
+            case 2: couleur(KNoir); break;
+            case 3: couleur(KRouge); break;
+            case 4: couleur(KJaune); break;
+            case 5: couleur(KBleu); break;
+            case 6: couleur(KMagenta); break;
+            case 7: couleur(KVert); break;
+            default: couleur(KCyan); break;
             }
             if (Mat[i][j] == KAIgnorer) fond(KRouge);
             cout << Mat[i][j] << " ";
@@ -127,14 +131,14 @@ void afficheMatriceV2 (const CMatrice & Mat, const unsigned & score = 0,
         cout << setw(2) << i + 1 << " | ";
         for(size_t j = 0; j < Mat[i].size(); ++j){
             switch(Mat[i][j]){
-                case 1: couleur(KReset); break;
-                case 2: couleur(KVert); break;
-                case 3: couleur(KRouge); break;
-                case 4: couleur(KJaune); break;
-                case 5: couleur(KBleu); break;
-                case 6: couleur(KMagenta); break;
-                case 7: couleur(KNoir); break;
-                default: couleur(KCyan); break;
+            case 1: couleur(KReset); break;
+            case 2: couleur(KVert); break;
+            case 3: couleur(KRouge); break;
+            case 4: couleur(KJaune); break;
+            case 5: couleur(KBleu); break;
+            case 6: couleur(KMagenta); break;
+            case 7: couleur(KNoir); break;
+            default: couleur(KCyan); break;
             }
             if (i == rowSelect && j == colSelect && colSelect != 99 && rowSelect != 99) fond(KBlanc);
             if (Mat[i][j] == KAIgnorer) fond(KRouge);
@@ -149,7 +153,7 @@ void afficheMatriceV2 (const CMatrice & Mat, const unsigned & score = 0,
 
 //fait descendre toutes les cases d'une unité suite à une explosition
 void explosionUneBombeHorizontale (CMatrice & mat, const size_t & numLigne,
-                                    const size_t & numColonne, const size_t & combien){
+                                  const size_t & numColonne, const size_t & combien){
     for(unsigned k = 0; k < combien; ++k){
         mat[numLigne][numColonne+k] = KAIgnorer;
         for(unsigned j = numLigne; j > 0; --j){
@@ -178,15 +182,10 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
             if (combienALaSuite >= 3){
                 auMoinsUneExplosion = true;
                 score += combienALaSuite;
-                /*cout << "on a une suite en position ligne = " << i+1
-                     << "; colonne = " << j+1
-                     << "; sur  " << combienALaSuite << " cases" << endl;
-                cout << string (20, '-') << endl << "matrice avant suppression" << endl;
-                afficheMatriceV2(mat);*/
                 explosionUneBombeHorizontale (mat, i, j, combienALaSuite);
-                //cout << string (20, '-') << endl << "matrice après suppression" << endl;
-                //afficheMatriceV2(mat);
-
+            } else  if (nvEssai){
+                --essai;
+                nvEssai = false;
             }
         }
     }
@@ -197,7 +196,7 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
 
 
 void explosionUneBombeVerticale (CMatrice & mat, const size_t & numLigne,
-                                    const size_t & numColonne, const size_t & combien){
+                                const size_t & numColonne, const size_t & combien){
     for(unsigned k = 0; k < combien; ++k){
         mat[numLigne+k][numColonne] = KAIgnorer;
         for(unsigned j = numLigne; j > 0; --j){
@@ -225,9 +224,9 @@ bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
                 auMoinsUneExplosion = true;
                 score += combienALaSuite;
                 explosionUneBombeVerticale (mat, i, j, combienALaSuite);
-                //cout << string (20, '-') << endl << "matrice après suppression" << endl;
-                //afficheMatriceV2(mat);
 
+            } else if (nvEssai){
+                --essai;
             }
         }
     }
@@ -255,7 +254,7 @@ void importNv(CMatrice & mat, const string & nomNv){
             ++comptHaut;
         }
 
-        mat[comptLarg][comptHaut] = nb;
+        mat[comptHaut][comptLarg] = nb;
 
         ++comptLarg;
     }
@@ -321,38 +320,108 @@ void editNv (CMatrice & mat){
 
 };
 
-//initialisation de la grille de jeu
-void initMat (CMatrice & mat, int level, const size_t & nbLignes = 10,
-             const size_t & nbColonnes = 10,
-             const unsigned & nbMax= KPlusGrandNombreDansLaMatrice){
+void initMat(CMatrice &mat, int level, const size_t &nbLignes = 10,
+             const size_t &nbColonnes = 10,
+             const unsigned &nbMax = KPlusGrandNombreDansLaMatrice) {
+    string lvlName;
+    switch (level)
+    {
+    case 1:
+        importNv(mat, "1.txt");
+        break;
+    case 2:
+        importNv(mat, "2.txt");
+        break;
+    case 3:
+        importNv(mat, "3.txt");
+        break;
+    case 4:
+        importNv(mat, "4.txt");
+        break;
+    case 5:
+        importNv(mat, "5.txt");
+        break;
+    case 6:
+        mat.resize(nbLignes);
+        for (size_t i = 0; i < nbLignes; ++i)
+        {
+            mat[i].resize(nbColonnes);
+            for (size_t j = 0; j < nbColonnes; ++j)
+            {
+                mat[i][j] = rand() % nbMax + 1;
+            }
+        }
+        break;
+    case 7:
+        cout << "Entrée dans l'éditeur de niveaux..." << endl;
+        editNv(mat);
+        break;
+    default:
+        cout << "Mauvais choix" << endl;
+        break;
+    }
+}
 
-    while (true) {
-        if (level == 1){
-            string lvlName;
-            importNv(mat, "1.txt");
-            break;
 
-        } else if (level == 6){
-            mat.resize(nbLignes);
-            for (size_t i = 0; i < nbLignes; ++i){
-                mat[i].resize(nbColonnes);
-                for(size_t j = 0; j < nbColonnes; ++j){
-                    mat[i][j] = rand() % nbMax + 1;
+
+// On dessine le tableau (lignes, cellules)
+void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5){
+    // On récupère la taille de la fenêtre
+    nsGraphics::Vec2D windowSize;
+    windowSize = window.getWindowSize();
+    int wx = (windowSize.getX() - 640)/2;
+    int wy = (windowSize.getY() - 640)/4;
+
+    // On initialise les variables néscessaire pour faire le tableau
+    boardSize = board;
+    cellSize = cell;
+    gapSize = gap;
+    totalCellSize = cell + gap;
+    boardTopLeftX = 320 + wx - (board * totalCellSize) / 2;
+    boardTopLeftY = 200 + wy;
+
+    // On dessigne les lignes
+    for (int i = 0; i <= boardSize; ++i) {
+        int lineCoord = boardTopLeftX + i * totalCellSize;
+
+        // On dessine les lignes vertival
+        window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, boardTopLeftY + i * totalCellSize),
+                                nsGraphics::Vec2D(boardTopLeftX + boardSize * totalCellSize, boardTopLeftY + i * totalCellSize),
+                                nsGraphics::KWhite);
+
+        // On dessine les lignes horizontal
+        window << nsShape::Line(nsGraphics::Vec2D(lineCoord, boardTopLeftY),
+                                nsGraphics::Vec2D(lineCoord, boardTopLeftY + boardSize * totalCellSize),
+                                nsGraphics::KWhite);
+
+        // On dessine les cellules
+        for (int row = 0; row < boardSize; ++row) {
+            for (int col = 0; col < boardSize; ++col) {
+                int lineX = boardTopLeftX + col * totalCellSize + gapSize;
+                int lineY = boardTopLeftY + row * totalCellSize + gapSize;
+                switch (mat[row][col]) {
+                case 0:
+                    // Aucun chiffre, je laisse la cellule vide
+                    break;
+                case 1:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KBlue);
+                    break;
+                case 2:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KRed);
+                    break;
+                case 3:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KBlack);
+                    break;
+                case 4:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KYellow);
+                    break;
                 }
             }
-            break;
-
-        } else if (level == 7){
-            cout << "Entrée dans l'éditeur de niveaux..." << endl;
-            editNv(mat);
-            break;
-        } else {
-            cout << "Mauvais choix" << endl;
-            continue;
         }
     }
 }
 
+// On calcul les différents events (cliques de la souris, swap, ...)
 void events(MinGL &window, int& level, bool& fullscreen)
 {
     // On récupère la taille de la fenêtre
@@ -360,10 +429,10 @@ void events(MinGL &window, int& level, bool& fullscreen)
     windowSize = window.getWindowSize();
     int wx = (windowSize.getX() - 640)/2;
     int wy = (windowSize.getY() - 640)/4;
+    int x, y = 0;
+
     // On vérifie chaque évènement de la queue d'évènements
     while (window.getEventManager().hasEvent())
-
-
     {
         const nsEvent::Event_t actualEvent = window.getEventManager().pullEvent();
 
@@ -374,16 +443,13 @@ void events(MinGL &window, int& level, bool& fullscreen)
             // Il s'agit d'un mouvement de souris
             triPos.setX(actualEvent.eventData.moveData.x);
             triPos.setY(actualEvent.eventData.moveData.y);
-
             break;
-
         case nsEvent::EventType_t::MouseClick:
+
             // Il s'agit d'un click de souris
             triColor = (actualEvent.eventData.clickData.state ? nsGraphics::KWhite : nsGraphics::KBlack);
 
-            // On récupère la position de la souris
-            int x, y;
-
+            // On récupère la position de la souris en ignorant en trop le deuxième clique
             if (mouse_clicked == false){
                 x = triPos.getX();
                 y = triPos.getY();
@@ -393,6 +459,7 @@ void events(MinGL &window, int& level, bool& fullscreen)
                 mouse_clicked = false;
             }
 
+            // On cherche la position x et y du x afin de oui ou non exécuter un évènement
             if (y >=11+wy/10 && y <= 30+wy/10){
                 if (x >= 610+wx*2 && x <= 632+wx*2){
                     cout << "Vous quittez le jeu !" << endl << endl;
@@ -408,6 +475,8 @@ void events(MinGL &window, int& level, bool& fullscreen)
                     }
                 }
             }
+
+            // Level == 0 correspond au menu, on cherche la position de x et y afin de savoir quel niveau choisir
             if (level == 0){
                 if (x >= 285+wx && x <= 360+wx){
                     if (y >= 220+wy && y <= 230+wy){
@@ -430,20 +499,33 @@ void events(MinGL &window, int& level, bool& fullscreen)
             } else if (level !=0 && x >= 560+wx*2 && x <= 580+wx*2 && y >= 10+wy/10 && y <=30+wy/10){
                 cout << "Vous retournez au menu !" << endl;
                 level = 0;
-            } else {
-                if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalCellSize &&
-                    y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize) {
+            } else if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalCellSize &&
+                       y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize) {
 
-                    // On calcule l'indice de la cellule
-                    clickedCol = (y - boardTopLeftY) / totalCellSize;
-                    clickedRow = (x - boardTopLeftX) / totalCellSize;
-                    ++clique;
-                    cout << "Vous avez cliqué sur la cellule ligne " << clickedCol << ", colonne " << clickedRow << endl;
+                // On calcule l'indice de la cellule
+                clickedCol = (y - boardTopLeftY) / totalCellSize;
+                clickedRow = (x - boardTopLeftX) / totalCellSize;
+                ++clique;
+                cout << "Vous avez cliqué sur la cellule ligne " << clickedCol << ", colonne " << clickedRow << endl;
+                if (clique == 1){
+                    FirstclickedCol = clickedCol;
+                    FirstclickedRow = clickedRow;
+                } else if (clique == 2) {
+                    if (abs(FirstclickedRow - clickedRow) <= 1 && abs(FirstclickedCol - clickedCol) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer
+                            && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow]) {
+
+                        // On swap les deux cellules
+                        swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
+
+                        // On detecte et explose
+                        detectionExplosionUneBombeHorizontale(mat, score);
+                        detectionExplosionUneBombeVerticale(mat, score);
+                        nvEssai = true;
+                        clique = 0;
+                    } clique = 0;
                 }
                 break;
             }
-
-
             break;
 
         default:
@@ -456,10 +538,6 @@ void events(MinGL &window, int& level, bool& fullscreen)
 
 void dessiner(MinGL &window, int& level)
 {
-    if (initMats == false){
-        initMat(mat, 1, 10, 10, 9);
-        initMats = true;
-    }
 
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
@@ -503,12 +581,9 @@ void dessiner(MinGL &window, int& level)
     } else {
         // On dessine le score
         window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Score : " + to_string(score), nsGraphics::KWhite);
-        if (level == 1 && score >= 12){
-            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 140+wy), "VOUS AVEZ GAGNE !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 160+wy), "VOUS POUVEZ CONTINUER A JOUER", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        }
+
+        // On dessine le nombre d'essai
+        window << nsGui::Text(nsGraphics::Vec2D(20, 40), "Essai(s) : " + to_string(essai), nsGraphics::KWhite);
 
         // On dessine le nom du nouveau (ex: niveau 1)
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 100+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
@@ -518,129 +593,70 @@ void dessiner(MinGL &window, int& level)
         window << nsShape::Triangle(nsGraphics::Vec2D(570+wx*2, 30+wy/10), nsGraphics::Vec2D(570+wx*2, 10+wy/10), nsGraphics::Vec2D(560+wx*2, 20+wy/10), nsGraphics::KWhite);
         window << nsShape::Line(nsGraphics::Vec2D(570+wx*2, 20+wy/10), nsGraphics::Vec2D(580+wx*2, 20+wy/10), nsGraphics::KWhite, 3.f);
 
-        if (level == 1) {
-            detectionExplosionUneBombeHorizontale(mat, score);
-            detectionExplosionUneBombeVerticale(mat, score);
-            if (clique == 1){
-                FirstclickedCol = clickedCol;
-                FirstclickedRow = clickedRow;
-            } else if (clique == 2) {
-                cout << "SECOND CLIQUE" << endl;
-                if (abs(FirstclickedRow - clickedRow) <= 1 && abs(FirstclickedCol - clickedCol) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer) {
-                    swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
-                    clique = 0;
-            } clique = 0;
-         }
-            // afficheMatriceV2(mat);
+        // Si le joueur a atteint le score demandé, alors il a gagné le niveau
+        if (score >= neededScore){
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 140+wy), "VOUS AVEZ GAGNE !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 160+wy), "VOUS POUVEZ RECOMMENCER !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
-            boardSize = 5;
-            cellSize = 50;
-            gapSize = 5;
-            totalCellSize = cellSize + gapSize;
-            boardTopLeftX = 320 + wx - (boardSize * totalCellSize) / 2;
-            boardTopLeftY = 200 + wy;
-            for (int row = 0; row <= boardSize; ++row) {
-                int lineY = boardTopLeftY + row * totalCellSize;         
-                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * totalCellSize, lineY), nsGraphics::KWhite);
-            }
+        } else if (essai == 0 && score < neededScore){
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 140+wy), "VOUS AVEZ PERDU ...", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+            window << nsGui::Text(nsGraphics::Vec2D(330+wx, 160+wy), "C'EST PAS GRAVE, VOUS POUVEZ RECOMMENCER !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        }
 
-            for (int col = 0; col <= boardSize; ++col) {
-                int lineX = boardTopLeftX + col * totalCellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * totalCellSize), nsGraphics::KWhite);
-            }
-
-            for (int row = 0; row < boardSize; ++row) {
-                for (int col = 0; col < boardSize; ++col) {
-                    int lineX = boardTopLeftX + col * totalCellSize + gapSize;
-                    int lineY = boardTopLeftY + row * totalCellSize + gapSize;
-                    switch (mat[row][col]) {
-                    case 0:
-                        // Aucun chiffre, je laisse la cellule vide
-                        break;
-                    case 1:
-                        window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KBlue);
-                        break;
-                    case 2:
-                        window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KRed);
-                        break;
-                    case 3:
-                        window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KBlack);
-                        break;
-                    }
-                }
-            }
-        } else if (level == 2){
-            // Dessine les lignes des cellules
-            const int boardSize = 10;
-            const int cellSize = 30; // Ajuster la taille des cellules
-            const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centré en dessous de "Niveau 1"
-            const int boardTopLeftY = 200 + wy;
-
-            for (int row = 0; row <= boardSize; ++row)
-            {
-                int lineY = boardTopLeftY + row * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
-            }
-
-            for (int col = 0; col <= boardSize; ++col)
-            {
-                int lineX = boardTopLeftX + col * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
-            }
-        } else if (level == 3){
-            // Dessine les lignes des cellules
-            const int boardSize = 10;
-            const int cellSize = 30; // Ajuster la taille des cellules
-            const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centré en dessous de "Niveau 1"
-            const int boardTopLeftY = 200 + wy;
-
-            for (int row = 0; row <= boardSize; ++row)
-            {
-                int lineY = boardTopLeftY + row * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
-            }
-
-            for (int col = 0; col <= boardSize; ++col)
-            {
-                int lineX = boardTopLeftX + col * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
-            }
-        } else if (level == 4){
-            // Dessine les lignes des cellules
-            const int boardSize = 10;
-            const int cellSize = 30; // Ajuster la taille des cellules
-            const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centré en dessous de "Niveau 1"
-            const int boardTopLeftY = 200 + wy;
-
-            for (int row = 0; row <= boardSize; ++row)
-            {
-                int lineY = boardTopLeftY + row * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
-            }
-
-            for (int col = 0; col <= boardSize; ++col)
-            {
-                int lineX = boardTopLeftX + col * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
-            }
-        } else if (level == 5){
-            // Dessine les lignes des cellules
-            const int boardSize = 10;
-            const int cellSize = 30; // Ajuster la taille des cellules
-            const int boardTopLeftX = 320 + wx - (boardSize * cellSize) / 2; // Centré en dessous de "Niveau 1"
-            const int boardTopLeftY = 200 + wy;
-
-            for (int row = 0; row <= boardSize; ++row)
-            {
-                int lineY = boardTopLeftY + row * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, lineY), nsGraphics::Vec2D(boardTopLeftX + boardSize * cellSize, lineY), nsGraphics::KWhite);
-            }
-
-            for (int col = 0; col <= boardSize; ++col)
-            {
-                int lineX = boardTopLeftX + col * cellSize;
-                window << nsShape::Line(nsGraphics::Vec2D(lineX, boardTopLeftY), nsGraphics::Vec2D(lineX, boardTopLeftY + boardSize * cellSize), nsGraphics::KWhite);
-            }
+        if (level == 1 && essai != 0 && score < neededScore) {
+            if (initMats == false){
+                score = 0;
+                essai = 5;
+                neededScore = 16;
+                initMat(mat, level, 5, 5, 9);
+                initMats = true;
+            } dessineBoard(window, 5, 50, 5);
+              detectionExplosionUneBombeHorizontale(mat, score);
+              detectionExplosionUneBombeVerticale(mat, score);
+        } else if (level == 2 && essai != 0 && score < neededScore){
+            if (initMats == false){
+                score = 0;
+                essai = 5;
+                neededScore = 16;
+                initMat(mat, level, 5, 5, 9);
+                initMats = true;
+            } dessineBoard(window, 5, 50, 5);
+              detectionExplosionUneBombeHorizontale(mat, score);
+              detectionExplosionUneBombeVerticale(mat, score);
+        } else if (level == 3 && essai != 0 && score < neededScore){
+            if (initMats == false){
+                score = 0;
+                essai = 5;
+                neededScore = 16;
+                initMat(mat, level, 5, 5, 9);
+                initMats = true;
+            } dessineBoard(window, 5, 50, 5);
+              detectionExplosionUneBombeHorizontale(mat, score);
+              detectionExplosionUneBombeVerticale(mat, score);
+        } else if (level == 4 && essai != 0 && score < neededScore){
+            if (initMats == false){
+                score = 0;
+                essai = 5;
+                neededScore = 16;
+                initMat(mat, level, 5, 5, 9);
+                initMats = true;
+            } dessineBoard(window, 5, 50, 5);
+              detectionExplosionUneBombeHorizontale(mat, score);
+              detectionExplosionUneBombeVerticale(mat, score);
+        } else if (level == 5 && essai != 0 && score < neededScore){
+            if (initMats == false){
+                score = 0;
+                essai = 5;
+                neededScore = 16;
+                initMat(mat, level, 5, 5, 9);
+                initMats = true;
+            } dessineBoard(window, 5, 50, 5);
+              detectionExplosionUneBombeHorizontale(mat, score);
+              detectionExplosionUneBombeVerticale(mat, score);
         }
     }
 }
