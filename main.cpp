@@ -23,6 +23,7 @@ typedef vector <contenueDUneCase> CVLigne; // un type représentant une ligne de
 typedef vector <CVLigne> CMatrice; // un type représentant la grille
 
 
+size_t randomSize;
 int boardSize;
 int cellSize;
 int gapSize;
@@ -236,6 +237,8 @@ bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
 }
 
 void importNv(CMatrice & mat, const string & nomNv){
+    cout << nomNv << endl;
+    afficheMatriceV2(mat);
     ifstream fichNv;
     fichNv.open(nomNv);
 
@@ -317,10 +320,34 @@ void editNv (CMatrice & mat){
     if (choix == 'y') saveNv(mat, nomNv);
 };
 
+// TODO
+void editeurNiveau(MinGL &window){
+    // On récupère la taille de la fenêtre
+    nsGraphics::Vec2D windowSize;
+    windowSize = window.getWindowSize();
+    int wx = (windowSize.getX() - 640)/2;
+    int wy = (windowSize.getY() - 640)/4;
+
+    // On affiche les choix disponibles
+    window << nsGui::Text(nsGraphics::Vec2D(330+wx, 230+wy), "Nombre de lignes ?", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 260+wy), "1    2    3   4   5   6   7   8   9   10", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 330+wy), "Nombre de colonnes ?", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 360+wy), "1    2    3   4   5   6   7   8   9   10", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 430+wy), "Nombre de cellules differentes ?", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 460+wy), "1    2    3   4   5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+}
+
 void initMat(CMatrice &mat, int level, const size_t &nbLignes = 10,
              const size_t &nbColonnes = 10,
              const unsigned &nbMax = KPlusGrandNombreDansLaMatrice) {
     string lvlName;
+    randomSize = rand() % 6 + 5;
     clique = 0;
     switch (level)
     {
@@ -340,15 +367,15 @@ void initMat(CMatrice &mat, int level, const size_t &nbLignes = 10,
         importNv(mat, "5.txt");
         break;
     case 6:
-        mat.resize(nbLignes);
-        for (size_t i = 0; i < nbLignes; ++i)
-        {
-            mat[i].resize(nbColonnes);
-            for (size_t j = 0; j < nbColonnes; ++j)
-            {
+        mat.resize(randomSize);
+        for (size_t i = 0; i < randomSize; ++i) {
+            mat[i].resize(randomSize);
+            for (size_t j = 0; j < randomSize; ++j) {
                 mat[i][j] = rand() % nbMax + 1;
             }
-        }
+        } afficheMatriceV2(mat);
+        saveNv(mat, "6");
+        importNv(mat, "6.txt");
         break;
     case 7:
         cout << "Entrée dans l'éditeur de niveaux..." << endl;
@@ -504,8 +531,15 @@ void events(MinGL &window, int& level, bool& fullscreen) {
                         cout << "Vous avez choisi le niveau 5 !" << endl;
                         level = 5;
                     }
+                } if (level == 0 && x >= 240+wx && x <= 393+wx){
+                    if (y >= 370+wy && y <= 382+wy){
+                        cout << "Niveau aléatoire !" << endl;
+                        level = 6;
+                    } else if (y >= 402+wy && y <= 412+wy){
+                        cout << "Vous êtes dans le menu pour créer un niveau !" << endl;
+                        level = 7;
+                    }
                 }
-
             }
 
             // Si le joueur souhaite recommencer le niveau, on recommence une nouvelle matrice
@@ -594,9 +628,9 @@ void dessiner(MinGL &window, int& level) {
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 350+wy), "Niveau 5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 380+wy), "Niveau aleatoire / Bientot", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 380+wy), "Niveau aleatoire", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 410+wy), "Editeur de niveau / Bientot", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 410+wy), "Editeur de niveau", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
     } else {
         // On dessine le score
@@ -606,8 +640,10 @@ void dessiner(MinGL &window, int& level) {
         window << nsGui::Text(nsGraphics::Vec2D(20, 40), "Essai(s) : " + to_string(essai), nsGraphics::KWhite);
 
         // On dessine le nom du nouveau (ex: niveau 1)
+        if (level > 0 && level < 6){
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 75+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        }
 
         // On dessine le nombre de score néscessaire afin de gagner
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 110+wy), "Vous avez besoin de " + to_string(neededScore) + " points !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
@@ -675,6 +711,8 @@ void dessiner(MinGL &window, int& level) {
                 neededScore = 30;
                 initMat(mat, level, 8, 8, 9);
                 initMats = true;
+                if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
+                fullscreen = true;
             } if (essai != 0 && score < neededScore) dessineBoard(window, 8, 50, 5);
             detectionExplosionUneBombeHorizontale(mat, score);
             detectionExplosionUneBombeVerticale(mat, score);
@@ -690,6 +728,20 @@ void dessiner(MinGL &window, int& level) {
             } if (essai != 0 && score < neededScore) dessineBoard(window, 10, 50, 5);
             detectionExplosionUneBombeHorizontale(mat, score);
             detectionExplosionUneBombeVerticale(mat, score);
+        } else if (level == 6) {
+            if (initMats == false){
+                initMat(mat, level);
+                score = 0;
+                essai = randomSize;
+                neededScore = 4 * randomSize;
+                initMats = true;
+                if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
+                fullscreen = true;
+            } if (essai != 0 && score < neededScore) dessineBoard(window, randomSize, 50, 5);
+            detectionExplosionUneBombeHorizontale(mat, score);
+            detectionExplosionUneBombeVerticale(mat, score);
+        } else if (level == 7) {
+            editeurNiveau(window);
         }
     }
 }
