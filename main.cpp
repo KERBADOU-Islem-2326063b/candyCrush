@@ -347,6 +347,7 @@ void initMat(CMatrice &mat, int level, const size_t &nbLignes = 10,
              const size_t &nbColonnes = 10,
              const unsigned &nbMax = KPlusGrandNombreDansLaMatrice) {
     string lvlName;
+    size_t randomNumber;
     randomSize = rand() % 6 + 5;
     clique = 0;
     switch (level)
@@ -367,16 +368,24 @@ void initMat(CMatrice &mat, int level, const size_t &nbLignes = 10,
         importNv(mat, "5.txt");
         break;
     case 6:
+    {
+        size_t randomSize = rand() % 6 + 5;
         mat.resize(randomSize);
         for (size_t i = 0; i < randomSize; ++i) {
             mat[i].resize(randomSize);
             for (size_t j = 0; j < randomSize; ++j) {
-                mat[i][j] = rand() % nbMax + 1;
+                while (true) {
+                    randomNumber = rand() % nbMax + 1;
+                    if ((j >= 2 && randomNumber == mat[i][j - 1] && randomNumber == mat[i][j - 2]) ||
+                        (i >= 2 && randomNumber == mat[i - 1][j] && randomNumber == mat[i - 2][j])) continue;
+                    break;
+                } mat[i][j] = randomNumber;
             }
         } afficheMatriceV2(mat);
-        saveNv(mat, "6");
-        importNv(mat, "6.txt");
-        break;
+          saveNv(mat, "6");
+          importNv(mat, "6.txt");
+          break;
+    }
     case 7:
         cout << "Entrée dans l'éditeur de niveaux..." << endl;
         editNv(mat);
@@ -679,7 +688,7 @@ void dessiner(MinGL &window, int& level) {
                 score = 0;
                 essai = 5;
                 neededScore = 16;
-                initMat(mat, level, 5, 5, 9);
+                initMat(mat, level, 5, 5);
                 initMats = true;
             } if (essai != 0 && score < neededScore) dessineBoard(window, 5, 50, 5);
             detectionExplosionUneBombeHorizontale(mat, score);
@@ -689,7 +698,7 @@ void dessiner(MinGL &window, int& level) {
                 score = 0;
                 essai = 7;
                 neededScore = 18;
-                initMat(mat, level, 6, 6, 9);
+                initMat(mat, level, 6, 6);
                 initMats = true;
             } if (essai != 0 && score < neededScore) dessineBoard(window, 6, 50, 5);
             detectionExplosionUneBombeHorizontale(mat, score);
@@ -699,7 +708,7 @@ void dessiner(MinGL &window, int& level) {
                 score = 0;
                 essai = 8;
                 neededScore = 27;
-                initMat(mat, level, 7, 7, 9);
+                initMat(mat, level, 7, 7);
                 initMats = true;
             } if (essai != 0 && score < neededScore) dessineBoard(window, 7, 50, 5);
             detectionExplosionUneBombeHorizontale(mat, score);
@@ -709,7 +718,7 @@ void dessiner(MinGL &window, int& level) {
                 score = 0;
                 essai = 10;
                 neededScore = 30;
-                initMat(mat, level, 8, 8, 9);
+                initMat(mat, level, 8, 8);
                 initMats = true;
                 if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
                 fullscreen = true;
@@ -721,7 +730,7 @@ void dessiner(MinGL &window, int& level) {
                 score = 0;
                 essai = 13;
                 neededScore = 44;
-                initMat(mat, level, 10, 10, 9);
+                initMat(mat, level, 10, 10);
                 initMats = true;
                 if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
                 fullscreen = true;
@@ -730,13 +739,14 @@ void dessiner(MinGL &window, int& level) {
             detectionExplosionUneBombeVerticale(mat, score);
         } else if (level == 6) {
             if (initMats == false){
-                initMat(mat, level);
+                initMat(mat, level, 10, 10, 4);
                 score = 0;
                 essai = randomSize;
                 neededScore = 4 * randomSize;
                 initMats = true;
                 if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
                 fullscreen = true;
+                // mat.resize(randomSize);
             } if (essai != 0 && score < neededScore) dessineBoard(window, randomSize, 50, 5);
             detectionExplosionUneBombeHorizontale(mat, score);
             detectionExplosionUneBombeVerticale(mat, score);
