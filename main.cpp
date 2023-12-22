@@ -189,7 +189,6 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
             }
         }
     }
-
     return auMoinsUneExplosion;
 }
 
@@ -420,8 +419,8 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5){
 }
 
 // On calcul les différents events (cliques de la souris, swap, ...)
-void events(MinGL &window, int& level, bool& fullscreen)
-{
+void events(MinGL &window, int& level, bool& fullscreen) {
+
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
     windowSize = window.getWindowSize();
@@ -474,6 +473,7 @@ void events(MinGL &window, int& level, bool& fullscreen)
                 } else if (x >= 560+wx*2 && x <= 580+wx*2){
                     cout << "Vous retournez au menu !" << endl;
                     level = 0;
+                    initMats = false;
                 }
             }
 
@@ -501,9 +501,7 @@ void events(MinGL &window, int& level, bool& fullscreen)
             }
 
             // Si le joueur souhaite recommencer le niveau, on recommence une nouvelle matrice
-            cout << score << " " << neededScore << endl;
-            if (level != 0 && x >= 259 && x <= 382 && y >= 300 && y <= 285 &&
-                (essai <= 0 || score >= neededScore)){
+            else if ((essai <= 0 || score >= neededScore) && x >= 259 && x <= 382 && y >= 285 && y <= 300){
                 cout << "Le niveau a été réinitialisé !" << endl;
                 initMats = false;
             }
@@ -523,6 +521,8 @@ void events(MinGL &window, int& level, bool& fullscreen)
                     FirstclickedCol = clickedCol;
                     FirstclickedRow = clickedRow;
                 } else if (clique == 2) {
+
+                    // On verifie que le swap est possible dans les regles definies
                     if (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer
                         && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow]
                         && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer) {
@@ -542,15 +542,14 @@ void events(MinGL &window, int& level, bool& fullscreen)
             break;
 
         default:
-            // L'évènement ne nous intéresse pas
+            // L'evenement ne nous intéresse pas
             break;
         }
     }
 }
 
 // Fonction utilisant MinGL pour dessiner
-void dessiner(MinGL &window, int& level)
-{
+void dessiner(MinGL &window, int& level) {
 
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
