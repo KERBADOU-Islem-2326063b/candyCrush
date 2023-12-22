@@ -501,7 +501,7 @@ void events(MinGL &window, int& level, bool& fullscreen) {
             }
 
             // Si le joueur souhaite recommencer le niveau, on recommence une nouvelle matrice
-            else if ((essai <= 0 || score >= neededScore) && x >= 259 && x <= 382 && y >= 285 && y <= 300){
+            else if (level != 0 && x >= 263 &&  x <= 380 && y >= 153 && y <= 168){
                 cout << "Le niveau a été réinitialisé !" << endl;
                 initMats = false;
             }
@@ -598,11 +598,15 @@ void dessiner(MinGL &window, int& level) {
         window << nsGui::Text(nsGraphics::Vec2D(20, 40), "Essai(s) : " + to_string(essai), nsGraphics::KWhite);
 
         // On dessine le nom du nouveau (ex: niveau 1)
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 100+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 75+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
         // On dessine le nombre de score néscessaire afin de gagner
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 135+wy), "Vous avez besoin de " + to_string(neededScore) + " score !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 110+wy), "Vous avez besoin de " + to_string(neededScore) + " score !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
+        // On dessine le le texte qui permet au joueur de relancer le niveau
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 165+wy), "Recommencer", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
         // On dessine la flèche pour retourner au menu
@@ -612,17 +616,15 @@ void dessiner(MinGL &window, int& level) {
         // Si le joueur a atteint le score demandé, alors il a gagné le niveau ou s'il n'a plus d'essai, il a perdu
         if (score >= neededScore || (essai == 0 && score < neededScore)){
             // On affiche le message pour que le joueur puisse recommencer une partie
-            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 300+wy), "CLIQUEZ ICI !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
-                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 210+wy), "VOUS POUVEZ RECOMMENCER !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 280+wy), "VOUS POUVEZ RECOMMENCER !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
             if (score >= neededScore){
                 // Si il a gagné, on affiche un messgae de victoire
-                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 180+wy), "VOUS AVEZ GAGNE !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 250+wy), "VOUS AVEZ GAGNE !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                       nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
             }   // Sinon, si il a perdu, on affiche un message de defaite
             else if (essai <= 0 && score < neededScore){
-                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 180+wy), "VOUS AVEZ PERDU !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 250+wy), "VOUS AVEZ PERDU !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                       nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
             }
         }
