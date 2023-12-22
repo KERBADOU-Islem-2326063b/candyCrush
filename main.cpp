@@ -29,6 +29,7 @@ int gapSize;
 int totalCellSize;
 int boardTopLeftX;
 int boardTopLeftY;
+int level = 0;
 int clique = 0;
 int FirstclickedCol = 0;
 int FirstclickedRow = 0;
@@ -38,6 +39,7 @@ int essai = 10;
 bool nvEssai = false;
 bool mouse_clicked = false;
 bool initMats = false;
+bool fullscreen = false;
 unsigned score (0);
 unsigned neededScore (1);
 CMatrice mat;
@@ -412,6 +414,12 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5){
                 case 4:
                     window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KYellow);
                     break;
+                case 5:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KGreen);
+                    break;
+                case 6:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(lineX, lineY), nsGraphics::Vec2D(lineX + cellSize - 5, lineY + cellSize - 5), nsGraphics::KWhite);
+                    break;
                 }
             }
         }
@@ -501,7 +509,7 @@ void events(MinGL &window, int& level, bool& fullscreen) {
             }
 
             // Si le joueur souhaite recommencer le niveau, on recommence une nouvelle matrice
-            else if (level != 0 && x >= 263 &&  x <= 380 && y >= 153 && y <= 168){
+            else if (level != 0 && x >= 263+wx &&  x <= 380+wx && y >= 153+wy && y <= 168+wy){
                 cout << "Le niveau a été réinitialisé !" << endl;
                 initMats = false;
             }
@@ -592,7 +600,7 @@ void dessiner(MinGL &window, int& level) {
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
     } else {
         // On dessine le score
-        window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Score : " + to_string(score), nsGraphics::KWhite);
+        window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Point(s) : " + to_string(score), nsGraphics::KWhite);
 
         // On dessine le nombre d'essai
         window << nsGui::Text(nsGraphics::Vec2D(20, 40), "Essai(s) : " + to_string(essai), nsGraphics::KWhite);
@@ -602,7 +610,7 @@ void dessiner(MinGL &window, int& level) {
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
         // On dessine le nombre de score néscessaire afin de gagner
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 110+wy), "Vous avez besoin de " + to_string(neededScore) + " score !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 110+wy), "Vous avez besoin de " + to_string(neededScore) + " points !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
         // On dessine le le texte qui permet au joueur de relancer le niveau
@@ -620,11 +628,11 @@ void dessiner(MinGL &window, int& level) {
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
             if (score >= neededScore){
                 // Si il a gagné, on affiche un messgae de victoire
-                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 250+wy), "VOUS AVEZ GAGNE !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 250+wy), "VOUS AVEZ GAGNE(E) !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                       nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
             }   // Sinon, si il a perdu, on affiche un message de defaite
             else if (essai <= 0 && score < neededScore){
-                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 250+wy), "VOUS AVEZ PERDU !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 250+wy), "VOUS AVEZ PERDU(E) !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                       nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
             }
         }
@@ -644,40 +652,42 @@ void dessiner(MinGL &window, int& level) {
             if (initMats == false){
                 score = 0;
                 essai = 7;
-                neededScore = 21;
-                initMat(mat, level, 7, 7, 9);
+                neededScore = 18;
+                initMat(mat, level, 6, 6, 9);
                 initMats = true;
-            } if (essai != 0 && score < neededScore) dessineBoard(window, 7, 50, 5);
+            } if (essai != 0 && score < neededScore) dessineBoard(window, 6, 50, 5);
             detectionExplosionUneBombeHorizontale(mat, score);
             detectionExplosionUneBombeVerticale(mat, score);
         } else if (level == 3){
             if (initMats == false){
                 score = 0;
-                essai = 9;
-                neededScore = 34;
-                initMat(mat, level, 5, 5, 9);
+                essai = 8;
+                neededScore = 27;
+                initMat(mat, level, 7, 7, 9);
                 initMats = true;
-            } if (essai != 0 && score < neededScore) dessineBoard(window, 5, 50, 5);
+            } if (essai != 0 && score < neededScore) dessineBoard(window, 7, 50, 5);
             detectionExplosionUneBombeHorizontale(mat, score);
             detectionExplosionUneBombeVerticale(mat, score);
         } else if (level == 4){
             if (initMats == false){
                 score = 0;
-                essai = 5;
-                neededScore = 40;
-                initMat(mat, level, 5, 5, 9);
+                essai = 10;
+                neededScore = 30;
+                initMat(mat, level, 8, 8, 9);
                 initMats = true;
-            } if (essai != 0 && score < neededScore) dessineBoard(window, 5, 50, 5);
+            } if (essai != 0 && score < neededScore) dessineBoard(window, 8, 50, 5);
             detectionExplosionUneBombeHorizontale(mat, score);
             detectionExplosionUneBombeVerticale(mat, score);
         } else if (level == 5){
             if (initMats == false){
                 score = 0;
-                essai = 5;
-                neededScore = 50;
-                initMat(mat, level, 5, 5, 9);
+                essai = 13;
+                neededScore = 44;
+                initMat(mat, level, 10, 10, 9);
                 initMats = true;
-            } dessineBoard(window, 5, 50, 5);
+                if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
+                fullscreen = true;
+            } if (essai != 0 && score < neededScore) dessineBoard(window, 10, 50, 5);
             detectionExplosionUneBombeHorizontale(mat, score);
             detectionExplosionUneBombeVerticale(mat, score);
         }
@@ -695,8 +705,6 @@ void souris(MinGL &window){
 // Fonction principale du programme
 int main() {
     // Initialise le système
-    int level = 0;
-    bool fullscreen = false;
     MinGL window("Candy Crush", nsGraphics::Vec2D(640, 640), nsGraphics::Vec2D(128, 128), nsGraphics::KPurple);
     window.initGlut();
     window.initGraphic();
