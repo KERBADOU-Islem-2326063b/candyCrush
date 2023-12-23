@@ -41,10 +41,13 @@ int FirstclickedRow = 0;
 int clickedCol = 0;
 int clickedRow = 0;
 int essai = 10;
+
 bool nvEssai = false;
 bool mouse_clicked = false;
+bool ms = false;
 bool initMats = false;
 bool fullscreen = false;
+bool inEditeur = false;
 unsigned score (0);
 unsigned neededScore (1);
 CMatrice mat;
@@ -324,11 +327,16 @@ void editNv (CMatrice & mat){
 
 // TODO
 void editeurNiveau(MinGL &window){
+    score = 0;
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
     windowSize = window.getWindowSize();
     int wx = (windowSize.getX() - 640)/2;
     int wy = (windowSize.getY() - 640)/4;
+    int x, y;
+
+    x = triPos.getX();
+    y = triPos.getY();
 
     // On affiche les choix disponibles
     window << nsGui::Text(nsGraphics::Vec2D(330+wx, 230+wy), "Nombre de ligne(s) et colonne(s) : " + to_string(editeurColRow), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
@@ -337,16 +345,82 @@ void editeurNiveau(MinGL &window){
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
     window << nsGui::Text(nsGraphics::Vec2D(320+wx, 330+wy), "Nombre de cellule(s) differente(s) : " + to_string(editeurCellules), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 360+wy), "1    2    3   4   5 ", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 360+wy), "1   2   3   4   5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
     window << nsGui::Text(nsGraphics::Vec2D(320+wx, 430+wy), "Nombre de score(s) necessaire(s) : " + to_string(neededScore), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 460+wy), "10    20    30   40   50", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 460+wy), "+1    +2    +5   +10", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 530+wy), "Nombre d'essai(s) : " + to_string(score), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 530+wy), "Nombre d'essai(s) : " + to_string(essai), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 560+wy), "1    2    3   4   5   6   7   8   9   10", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 560+wy), "+1    +2    +5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
+    if (mouse_clicked){
+        mouse_clicked = false;
+        if (y >= 250+wy && y <= 260+wy){
+            if (x >= 222+wx and x <= 230+wx){
+                editeurColRow = 5;
+            }
+            if (x >= 259+wx && x <= 267+wx){
+                editeurColRow = 6;
+            }
+            if (x >= 296+wx && x <= 303+wx){
+                editeurColRow = 7;
+            }
+            if (x >= 331+wx && x <= 339+wx){
+                editeurColRow = 8;
+            }
+            if (x >= 367+wx && x <= 376+wx){
+                editeurColRow = 9;
+            }
+            if (x >= 403+wx && x <= 420+wx){
+                editeurColRow = 10;
+            }
+        }
+        if (y >= 352+wy && y <= 362+wy){
+            if (x >= 246+wx and x <= 253+wx){
+                editeurCellules = 1;
+            }
+            if (x >= 282+wx && x <= 290+wx){
+                editeurCellules = 2;
+            }
+            if (x >= 317+wx && x <= 327+wx){
+                editeurCellules = 3;
+            }
+            if (x >= 353+wx && x <= 363+wx){
+                editeurCellules = 4;
+            }
+            if (x >= 390+wx && x <= 398+wx){
+                editeurCellules = 5;
+            }
+        }
+        if (y >= 450+wy && y <= 462+wy){
+            if (x >= 232+wx and x <= 249+wx){
+                ++neededScore;
+            }
+            if (x >= 286+wx && x <= 304+wx){
+                neededScore = neededScore + 2;
+            }
+            if (x >= 341+wx && x <= 357+wx){
+                neededScore = neededScore + 5;
+            }
+            if (x >= 385+wx && x <= 412+wx){
+                neededScore = neededScore + 10;
+            }
+        }
+        if (y >= 550+wy && y <= 562+wy){
+            if (x >= 259+wx and x <= 276+wx){
+                ++essai;
+            }
+            if (x >= 314+wx && x <= 330+wx){
+                essai = essai + 2;
+            }
+            if (x >= 367+wx && x <= 384+wx){
+                essai = essai + 5;
+            }
+        }
+    }
 }
 
 void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreDansLaMatrice) {
@@ -480,6 +554,7 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5){
     }
 }
 
+
 // On calcul les différents events (cliques de la souris, swap, ...)
 void events(MinGL &window, int& level, bool& fullscreen) {
 
@@ -514,9 +589,7 @@ void events(MinGL &window, int& level, bool& fullscreen) {
                 y = triPos.getY();
                 cout << "Position x : " << x << " Position y : " << y << endl;
                 mouse_clicked = true;
-            } else {
-                mouse_clicked = false;
-            }
+            } else mouse_clicked = false;
 
             // On cherche la position x et y du x afin de oui ou non exécuter un évènement
             if (y >=11+wy/10 && y <= 30+wy/10){
@@ -669,7 +742,7 @@ void dessiner(MinGL &window, int& level) {
         window << nsShape::Line(nsGraphics::Vec2D(570+wx*2, 20+wy/10), nsGraphics::Vec2D(580+wx*2, 20+wy/10), nsGraphics::KWhite, 3.f);
 
         // Si le joueur a atteint le score demandé, alors il a gagné le niveau ou s'il n'a plus d'essai, il a perdu
-        if (score >= neededScore || (essai == 0 && score < neededScore)){
+        if ((score >= neededScore || (essai == 0 && score < neededScore)) && inEditeur == false){
             // On affiche le message pour que le joueur puisse recommencer une partie
             window << nsGui::Text(nsGraphics::Vec2D(320+wx, 280+wy), "VOUS POUVEZ RECOMMENCER !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
@@ -754,6 +827,12 @@ void dessiner(MinGL &window, int& level) {
             detectionExplosionUneBombeHorizontale(mat, score);
             detectionExplosionUneBombeVerticale(mat, score);
         } else if (level == 7) {
+            if (inEditeur == false){
+                score = 0;
+                essai = 0;
+                neededScore = 0;
+            }
+            inEditeur = true;
             editeurNiveau(window);
         }
     }
