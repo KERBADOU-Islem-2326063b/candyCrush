@@ -355,72 +355,6 @@ void editeurNiveau(MinGL &window){
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
     window << nsGui::Text(nsGraphics::Vec2D(320+wx, 560+wy), "+1    +2    +5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-
-    if (mouse_clicked){
-        mouse_clicked = false;
-        if (y >= 250+wy && y <= 260+wy){
-            if (x >= 222+wx and x <= 230+wx){
-                editeurColRow = 5;
-            }
-            if (x >= 259+wx && x <= 267+wx){
-                editeurColRow = 6;
-            }
-            if (x >= 296+wx && x <= 303+wx){
-                editeurColRow = 7;
-            }
-            if (x >= 331+wx && x <= 339+wx){
-                editeurColRow = 8;
-            }
-            if (x >= 367+wx && x <= 376+wx){
-                editeurColRow = 9;
-            }
-            if (x >= 403+wx && x <= 420+wx){
-                editeurColRow = 10;
-            }
-        }
-        if (y >= 352+wy && y <= 362+wy){
-            if (x >= 246+wx and x <= 253+wx){
-                editeurCellules = 1;
-            }
-            if (x >= 282+wx && x <= 290+wx){
-                editeurCellules = 2;
-            }
-            if (x >= 317+wx && x <= 327+wx){
-                editeurCellules = 3;
-            }
-            if (x >= 353+wx && x <= 363+wx){
-                editeurCellules = 4;
-            }
-            if (x >= 390+wx && x <= 398+wx){
-                editeurCellules = 5;
-            }
-        }
-        if (y >= 450+wy && y <= 462+wy){
-            if (x >= 232+wx and x <= 249+wx){
-                ++neededScore;
-            }
-            if (x >= 286+wx && x <= 304+wx){
-                neededScore = neededScore + 2;
-            }
-            if (x >= 341+wx && x <= 357+wx){
-                neededScore = neededScore + 5;
-            }
-            if (x >= 385+wx && x <= 412+wx){
-                neededScore = neededScore + 10;
-            }
-        }
-        if (y >= 550+wy && y <= 562+wy){
-            if (x >= 259+wx and x <= 276+wx){
-                ++essai;
-            }
-            if (x >= 314+wx && x <= 330+wx){
-                essai = essai + 2;
-            }
-            if (x >= 367+wx && x <= 384+wx){
-                essai = essai + 5;
-            }
-        }
-    }
 }
 
 void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreDansLaMatrice) {
@@ -647,6 +581,72 @@ void events(MinGL &window, int& level, bool& fullscreen) {
                 cout << "Le niveau a été réinitialisé !" << endl;
                 initMats = false;
             }
+
+            if (inEditeur == true){
+                if (y >= 250+wy && y <= 260+wy){
+                    if (x >= 222+wx and x <= 230+wx){
+                        editeurColRow = 5;
+                    }
+                    if (x >= 259+wx && x <= 267+wx){
+                        editeurColRow = 6;
+                    }
+                    if (x >= 296+wx && x <= 303+wx){
+                        editeurColRow = 7;
+                    }
+                    if (x >= 331+wx && x <= 339+wx){
+                        editeurColRow = 8;
+                    }
+                    if (x >= 367+wx && x <= 376+wx){
+                        editeurColRow = 9;
+                    }
+                    if (x >= 403+wx && x <= 420+wx){
+                        editeurColRow = 10;
+                    }
+                }
+                if (y >= 352+wy && y <= 362+wy){
+                    if (x >= 246+wx and x <= 253+wx){
+                        editeurCellules = 1;
+                    }
+                    if (x >= 282+wx && x <= 290+wx){
+                        editeurCellules = 2;
+                    }
+                    if (x >= 317+wx && x <= 327+wx){
+                        editeurCellules = 3;
+                    }
+                    if (x >= 353+wx && x <= 363+wx){
+                        editeurCellules = 4;
+                    }
+                    if (x >= 390+wx && x <= 398+wx){
+                        editeurCellules = 5;
+                    }
+                }
+                if (y >= 450+wy && y <= 462+wy){
+                    if (x >= 232+wx and x <= 249+wx){
+                        ++neededScore;
+                    }
+                    if (x >= 286+wx && x <= 304+wx){
+                        neededScore = neededScore + 2;
+                    }
+                    if (x >= 341+wx && x <= 357+wx){
+                        neededScore = neededScore + 5;
+                    }
+                    if (x >= 385+wx && x <= 412+wx){
+                        neededScore = neededScore + 10;
+                    }
+                }
+                if (y >= 550+wy && y <= 562+wy){
+                    if (x >= 259+wx and x <= 276+wx){
+                        ++essai;
+                    }
+                    if (x >= 314+wx && x <= 330+wx){
+                        essai = essai + 2;
+                    }
+                    if (x >= 367+wx && x <= 384+wx){
+                        essai = essai + 5;
+                    }
+                }
+            }
+
 
 
             // Si le joueur clique sur l'une des cases de la cellule
