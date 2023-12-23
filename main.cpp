@@ -397,6 +397,23 @@ void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreD
     }
 }
 
+void faitUnMouvement (CMatrice & mat) {
+    // On verifie que le swap est possible dans les regles definies
+    if (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer
+        && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow]
+        && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer) {
+
+        // On échange les deux cellules
+        swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
+
+        // On detecte et explose
+        detectionExplosionUneBombeHorizontale(mat, score);
+        detectionExplosionUneBombeVerticale(mat, score);
+        nvEssai = true;
+        clique = 0;
+    } clique = 0;
+}
+
 
 
 // On dessine le tableau (lignes, cellules)
@@ -572,23 +589,7 @@ void events(MinGL &window, int& level, bool& fullscreen) {
                 if (clique == 1){
                     FirstclickedCol = clickedCol;
                     FirstclickedRow = clickedRow;
-                } else if (clique == 2) {
-
-                    // On verifie que le swap est possible dans les regles definies
-                    if (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer
-                        && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow]
-                        && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer) {
-
-                        // On échange les deux cellules
-                        swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
-
-                        // On detecte et explose
-                        detectionExplosionUneBombeHorizontale(mat, score);
-                        detectionExplosionUneBombeVerticale(mat, score);
-                        nvEssai = true;
-                        clique = 0;
-                    } clique = 0;
-                }
+                } else if (clique == 2) faitUnMouvement(mat);
                 break;
             }
             break;
