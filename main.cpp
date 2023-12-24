@@ -2,6 +2,7 @@
 
 // --PRIORITES--
 // Animation
+// Simplifier le code, faire plus de fonctions peut-être et plus de paramètres
 
 // --SECONDAIRE--
 // Editeur de niveau pleins de bugs (enleve 1 et 2 pour cellule, quand on a fini le niveau y a pas marqué t'as gagné
