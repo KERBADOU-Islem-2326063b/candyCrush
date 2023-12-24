@@ -41,13 +41,13 @@ int FirstclickedRow = 0;
 int clickedCol = 0;
 int clickedRow = 0;
 int essai = 10;
+int inEditeur = 1;
 
 bool nvEssai = false;
 bool mouse_clicked = false;
 bool ms = false;
 bool initMats = false;
 bool fullscreen = false;
-bool inEditeur = false;
 unsigned score (0);
 unsigned neededScore (1);
 CMatrice mat;
@@ -327,37 +327,34 @@ void editNv (CMatrice & mat){
 
 // TODO
 void editeurNiveau(MinGL &window){
-    score = 0;
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
     windowSize = window.getWindowSize();
     int wx = (windowSize.getX() - 640)/2;
     int wy = (windowSize.getY() - 640)/4;
-    int x, y;
 
-    x = triPos.getX();
-    y = triPos.getY();
-
-    // On affiche les choix disponibles
-    window << nsGui::Text(nsGraphics::Vec2D(330+wx, 230+wy), "Nombre de ligne(s) et colonne(s) : " + to_string(editeurColRow), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 260+wy), "5   6   7   8   9   10", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 330+wy), "Nombre de cellule(s) differente(s) : " + to_string(editeurCellules), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 360+wy), "1   2   3   4   5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 430+wy), "Nombre de score(s) necessaire(s) : " + to_string(neededScore), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 460+wy), "+1    +2    +5   +10", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 530+wy), "Nombre d'essai(s) : " + to_string(essai), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 560+wy), "+1    +2    +5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    if (inEditeur == 2){
+        // On affiche les choix disponibles
+        window << nsGui::Text(nsGraphics::Vec2D(330+wx, 230+wy), "Nombre de ligne(s) et colonne(s) : " + to_string(editeurColRow), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 260+wy), "5   6   7   8   9   10", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 330+wy), "Nombre de cellule(s) differente(s) : " + to_string(editeurCellules), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 360+wy), "1   2   3   4   5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 430+wy), "Nombre de score(s) necessaire(s) : " + to_string(neededScore), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 460+wy), "+1    +2    +5   +10", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 530+wy), "Nombre d'essai(s) : " + to_string(essai), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 560+wy), "+1    +2    +5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    }
 }
 
-void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreDansLaMatrice) {
+void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreDansLaMatrice, int editeur = 5) {
     string lvlName;
     size_t randomNumber;
     clique = 0;
@@ -392,13 +389,28 @@ void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreD
                 } mat[i][j] = randomNumber;
             }
         } afficheMatriceV2(mat);
-          saveNv(mat, "6");
+          saveNv(mat, "7");
+          // TODO
+          // editNV()
           break;
     }
     case 7:
-        cout << "Entrée dans l'éditeur de niveaux..." << endl;
-        editNv(mat);
+    {
+        mat.resize(editeur);
+        for (int i = 0; i < editeur; ++i) {
+            mat[i].resize(editeur);
+            for (int j = 0; j < editeur; ++j) {
+                while (true) {
+                    randomNumber = rand() % nbMax + 1;
+                    if ((j >= 2 && randomNumber == mat[i][j - 1] && randomNumber == mat[i][j - 2]) ||
+                        (i >= 2 && randomNumber == mat[i - 1][j] && randomNumber == mat[i - 2][j])) continue;
+                    break;
+                } mat[i][j] = randomNumber;
+            }
+        } afficheMatriceV2(mat);
+        saveNv(mat, "7");
         break;
+    }
     default:
         cout << "Mauvais choix" << endl;
         break;
@@ -422,17 +434,31 @@ void faitUnMouvement (CMatrice & mat) {
     } clique = 0;
 }
 
+void menu(MinGL &window, int wx, int wy){
+    window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Fait par : KERBADOU Islem, ODERZO Flavio", nsGraphics::KWhite);
+    window << nsGui::Text(nsGraphics::Vec2D(20, 40), "FROMENTIN Felix, GOUGEON Hugo", nsGraphics::KWhite);
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Candy Crush", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    window << nsGui::Text(nsGraphics::Vec2D(330+wx, 200+wy), "Choix du niveau : ", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 230+wy), "Niveau 1", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 260+wy), "Niveau 2", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 290+wy), "Niveau 3", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 320+wy), "Niveau 4", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 350+wy), "Niveau 5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 380+wy), "Niveau aleatoire", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 410+wy), "Editeur de niveau", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                          nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+}
 
 
-// On dessine le tableau (lignes, cellules)
-void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5){
-
-    // On récupère la taille de la fenêtre
-    nsGraphics::Vec2D windowSize;
-    windowSize = window.getWindowSize();
-    int wx = (windowSize.getX() - 640)/2;
-    int wy = (windowSize.getY() - 640)/4;
-
+void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int wx = 640, int wy = 640){
     // On initialise les variables néscessaire pour faire le tableau
     boardSize = board;
     cellSize = cell;
@@ -582,7 +608,7 @@ void events(MinGL &window, int& level, bool& fullscreen) {
                 initMats = false;
             }
 
-            if (inEditeur == true){
+            if (inEditeur == 2){
                 if (y >= 250+wy && y <= 260+wy){
                     if (x >= 222+wx and x <= 230+wx){
                         editeurColRow = 5;
@@ -645,6 +671,13 @@ void events(MinGL &window, int& level, bool& fullscreen) {
                         essai = essai + 5;
                     }
                 }
+                if (y >= 99+wy && y <= 112+wy && x >= 273+wx && x <= 371+wx){
+                    initMat(mat, 7, editeurCellules, editeurColRow);
+                    inEditeur = 3;
+                }
+                if (y >= 152+wy && y <= 165+wy && x >= 300+wy && x <= 346+wy){
+                    inEditeur = 1;
+                }
             }
 
 
@@ -674,6 +707,7 @@ void events(MinGL &window, int& level, bool& fullscreen) {
     }
 }
 
+
 // Fonction utilisant MinGL pour dessiner
 void dessiner(MinGL &window, int& level) {
 
@@ -695,28 +729,9 @@ void dessiner(MinGL &window, int& level) {
     window << nsShape::Line(nsGraphics::Vec2D(604+wx*2, 12+wy/10), nsGraphics::Vec2D(604+wx*2, 28+wy/10), nsGraphics::KWhite, 3.f);
 
     // On dessine le menu
-    if (level == 0){
-        window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Fait par : KERBADOU Islem, ODERZO Flavio", nsGraphics::KWhite);
-        window << nsGui::Text(nsGraphics::Vec2D(20, 40), "FROMENTIN Felix, GOUGEON Hugo", nsGraphics::KWhite);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Candy Crush", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(330+wx, 200+wy), "Choix du niveau : ", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 230+wy), "Niveau 1", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 260+wy), "Niveau 2", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 290+wy), "Niveau 3", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 320+wy), "Niveau 4", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 350+wy), "Niveau 5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 380+wy), "Niveau aleatoire", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 410+wy), "Editeur de niveau", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-    } else {
+    if (level == 0) menu(window, wx, wy);
+
+    else {
         // On dessine le score
         window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Point(s) : " + to_string(score), nsGraphics::KWhite);
 
@@ -729,20 +744,30 @@ void dessiner(MinGL &window, int& level) {
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         }
 
-        // On dessine le nombre de score néscessaire afin de gagner
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 110+wy), "Vous avez besoin de " + to_string(neededScore) + " points !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        if (inEditeur != 2){
+            // On dessine le nombre de score néscessaire afin de gagner
+            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 110+wy), "Vous avez besoin de " + to_string(neededScore) + " points !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
-        // On dessine le le texte qui permet au joueur de relancer le niveau
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 165+wy), "Recommencer", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+            // On dessine le le texte qui permet au joueur de relancer le niveau
+            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 165+wy), "Recommencer", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        } else {
+            // On dessine le nombre de score néscessaire afin de gagner
+            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 110+wy), "Commencer", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
+            // On dessine le le texte qui permet au joueur de relancer le niveau
+            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 165+wy), "Reset", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        }
 
         // On dessine la flèche pour retourner au menu
         window << nsShape::Triangle(nsGraphics::Vec2D(570+wx*2, 30+wy/10), nsGraphics::Vec2D(570+wx*2, 10+wy/10), nsGraphics::Vec2D(560+wx*2, 20+wy/10), nsGraphics::KWhite);
         window << nsShape::Line(nsGraphics::Vec2D(570+wx*2, 20+wy/10), nsGraphics::Vec2D(580+wx*2, 20+wy/10), nsGraphics::KWhite, 3.f);
 
         // Si le joueur a atteint le score demandé, alors il a gagné le niveau ou s'il n'a plus d'essai, il a perdu
-        if ((score >= neededScore || (essai == 0 && score < neededScore)) && inEditeur == false){
+        if ((score >= neededScore || (essai == 0 && score < neededScore)) && inEditeur == 1){
             // On affiche le message pour que le joueur puisse recommencer une partie
             window << nsGui::Text(nsGraphics::Vec2D(320+wx, 280+wy), "VOUS POUVEZ RECOMMENCER !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
@@ -765,9 +790,7 @@ void dessiner(MinGL &window, int& level) {
                 neededScore = 16;
                 initMat(mat, level);
                 initMats = true;
-            } if (essai != 0 && score < neededScore) dessineBoard(window, 5, 50, 5);
-            detectionExplosionUneBombeHorizontale(mat, score);
-            detectionExplosionUneBombeVerticale(mat, score);
+            } if (essai != 0 && score < neededScore) dessineBoard(window, 5, 50, 5, wx, wy);
         } else if (level == 2){
             if (initMats == false){
                 score = 0;
@@ -775,9 +798,7 @@ void dessiner(MinGL &window, int& level) {
                 neededScore = 18;
                 initMat(mat, level);
                 initMats = true;
-            } if (essai != 0 && score < neededScore) dessineBoard(window, 6, 50, 5);
-            detectionExplosionUneBombeHorizontale(mat, score);
-            detectionExplosionUneBombeVerticale(mat, score);
+            } if (essai != 0 && score < neededScore) dessineBoard(window, 6, 50, 5, wx, wy);
         } else if (level == 3){
             if (initMats == false){
                 score = 0;
@@ -785,9 +806,7 @@ void dessiner(MinGL &window, int& level) {
                 neededScore = 27;
                 initMat(mat, level);
                 initMats = true;
-            } if (essai != 0 && score < neededScore) dessineBoard(window, 7, 50, 5);
-            detectionExplosionUneBombeHorizontale(mat, score);
-            detectionExplosionUneBombeVerticale(mat, score);
+            } if (essai != 0 && score < neededScore) dessineBoard(window, 7, 50, 5, wx, wy);
         } else if (level == 4){
             if (initMats == false){
                 score = 0;
@@ -797,9 +816,7 @@ void dessiner(MinGL &window, int& level) {
                 initMats = true;
                 if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
                 fullscreen = true;
-            } if (essai != 0 && score < neededScore) dessineBoard(window, 8, 50, 5);
-            detectionExplosionUneBombeHorizontale(mat, score);
-            detectionExplosionUneBombeVerticale(mat, score);
+            } if (essai != 0 && score < neededScore) dessineBoard(window, 8, 50, 5, wx, wy);
         } else if (level == 5){
             if (initMats == false){
                 score = 0;
@@ -809,9 +826,7 @@ void dessiner(MinGL &window, int& level) {
                 initMats = true;
                 if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
                 fullscreen = true;
-            } if (essai != 0 && score < neededScore) dessineBoard(window, 10, 50, 5);
-            detectionExplosionUneBombeHorizontale(mat, score);
-            detectionExplosionUneBombeVerticale(mat, score);
+            } if (essai != 0 && score < neededScore) dessineBoard(window, 10, 50, 5, wx, wy);
         } else if (level == 6) {
             if (initMats == false){
                 randomSize = rand() % 6 + 5;
@@ -823,17 +838,18 @@ void dessiner(MinGL &window, int& level) {
                 if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
                 fullscreen = true;
             }
-            if (essai != 0 && score < neededScore) dessineBoard(window, randomSize, 50, 5);
-            detectionExplosionUneBombeHorizontale(mat, score);
-            detectionExplosionUneBombeVerticale(mat, score);
+            if (essai != 0 && score < neededScore) dessineBoard(window, randomSize, 50, 5, wx, wy);
         } else if (level == 7) {
-            if (inEditeur == false){
+            if (inEditeur == 1){
+                editeurCellules = 0;
+                editeurColRow = 0;
                 score = 0;
                 essai = 0;
                 neededScore = 0;
+                inEditeur = 2;
             }
-            inEditeur = true;
             editeurNiveau(window);
+            if (essai != 0 && score < neededScore && inEditeur == 3) dessineBoard(window, editeurColRow, 50, 5, wx, wy);
         }
     }
 }
