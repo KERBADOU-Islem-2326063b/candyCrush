@@ -1,3 +1,15 @@
+// TODO
+
+// --PRIORITES--
+// Animation
+
+// --SECONDAIRE--
+// Editeur de niveau pleins de bugs (enleve 1 et 2 pour cellule, quand on a fini le niveau y a pas marqué t'as gagné
+// et le bouton recommencer ne marche pas
+
+// Editeur de niveau placer les cellules nous mêmes
+
+
 #define FPS_LIMIT 60
 
 #include <iostream>
@@ -50,6 +62,7 @@ bool initMats = false;
 bool fullscreen = false;
 unsigned score (0);
 unsigned neededScore (1);
+bool animation = false; // TODO
 CMatrice mat;
 
 const unsigned KReset   (0);
@@ -325,7 +338,6 @@ void editNv (CMatrice & mat){
     if (choix == 'y') saveNv(mat, nomNv);
 };
 
-// TODO
 void editeurNiveau(MinGL &window){
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
@@ -390,8 +402,6 @@ void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreD
             }
         } afficheMatriceV2(mat);
           saveNv(mat, "7");
-          // TODO
-          // editNV()
           break;
     }
     case 7:
@@ -417,11 +427,13 @@ void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreD
     }
 }
 
+
 void faitUnMouvement (CMatrice & mat) {
     // On verifie que le swap est possible dans les regles definies
     if (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer
         && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow]
         && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer) {
+        animation = true;
 
         // On échange les deux cellules
         swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
@@ -431,7 +443,8 @@ void faitUnMouvement (CMatrice & mat) {
         detectionExplosionUneBombeVerticale(mat, score);
         nvEssai = true;
         clique = 0;
-    } clique = 0;
+    }
+    clique = 0;
 }
 
 void menu(MinGL &window, int wx, int wy){
