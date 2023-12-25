@@ -471,7 +471,6 @@ void menu(MinGL &window, int wx, int wy){
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 }
 
-
 void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int wx = 640, int wy = 640){
     // On initialise les variables néscessaire pour faire le tableau
     boardSize = board;
@@ -528,15 +527,80 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
     }
 }
 
+void initLevel(MinGL &window, int level, int wx, int wy){
+    if (level == 1) {
+        if (initMats == false){
+            score = 0;
+            essai = 5;
+            neededScore = 16;
+            initMat(mat, level);
+            initMats = true;
+        } if (essai != 0 && score < neededScore) dessineBoard(window, 5, 50, 5, wx, wy);
+    } else if (level == 2){
+        if (initMats == false){
+            score = 0;
+            essai = 7;
+            neededScore = 18;
+            initMat(mat, level);
+            initMats = true;
+        } if (essai != 0 && score < neededScore) dessineBoard(window, 6, 50, 5, wx, wy);
+    } else if (level == 3){
+        if (initMats == false){
+            score = 0;
+            essai = 8;
+            neededScore = 27;
+            initMat(mat, level);
+            initMats = true;
+        } if (essai != 0 && score < neededScore) dessineBoard(window, 7, 50, 5, wx, wy);
+    } else if (level == 4){
+        if (initMats == false){
+            score = 0;
+            essai = 10;
+            neededScore = 30;
+            initMat(mat, level);
+            initMats = true;
+            if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
+            fullscreen = true;
+        } if (essai != 0 && score < neededScore) dessineBoard(window, 8, 50, 5, wx, wy);
+    } else if (level == 5){
+        if (initMats == false){
+            score = 0;
+            essai = 13;
+            neededScore = 44;
+            initMat(mat, level);
+            initMats = true;
+            if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
+            fullscreen = true;
+        } if (essai != 0 && score < neededScore) dessineBoard(window, 10, 50, 5, wx, wy);
+    } else if (level == 6) {
+        if (initMats == false){
+            randomSize = rand() % 6 + 5;
+            initMat(mat, level, 4);
+            score = 0;
+            essai = randomSize;
+            neededScore = 3 * randomSize;
+            initMats = true;
+            if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
+            fullscreen = true;
+        }
+        if (essai != 0 && score < neededScore) dessineBoard(window, randomSize, 50, 5, wx, wy);
+    } else if (level == 7) {
+        if (inEditeur == 1){
+            editeurCellules = 0;
+            editeurColRow = 0;
+            score = 0;
+            essai = 0;
+            neededScore = 0;
+            inEditeur = 2;
+        }
+        editeurNiveau(window);
+        if (essai != 0 && score < neededScore && inEditeur == 3) dessineBoard(window, editeurColRow, 50, 5, wx, wy);
+    }
+}
+
 
 // On calcul les différents events (cliques de la souris, swap, ...)
-void events(MinGL &window, int& level, bool& fullscreen) {
-
-    // On récupère la taille de la fenêtre
-    nsGraphics::Vec2D windowSize;
-    windowSize = window.getWindowSize();
-    int wx = (windowSize.getX() - 640)/2;
-    int wy = (windowSize.getY() - 640)/4;
+void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
     int x, y;
 
     // On vérifie chaque évènement de la queue d'évènements
@@ -566,7 +630,7 @@ void events(MinGL &window, int& level, bool& fullscreen) {
             } else mouse_clicked = false;
 
             // On cherche la position x et y du x afin de oui ou non exécuter un évènement
-            if (y >=11+wy/10 && y <= 30+wy/10){
+            if (y >= 11+wy/10 && y <= 30+wy/10){
                 if (x >= 610+wx*2 && x <= 632+wx*2){
                     cout << "Vous quittez le jeu !" << endl << endl;
                     window.stopGraphic();
@@ -622,80 +686,6 @@ void events(MinGL &window, int& level, bool& fullscreen) {
                 initMats = false;
             }
 
-            if (inEditeur == 2){
-                if (y >= 250+wy && y <= 260+wy){
-                    if (x >= 222+wx and x <= 230+wx){
-                        editeurColRow = 5;
-                    }
-                    if (x >= 259+wx && x <= 267+wx){
-                        editeurColRow = 6;
-                    }
-                    if (x >= 296+wx && x <= 303+wx){
-                        editeurColRow = 7;
-                    }
-                    if (x >= 331+wx && x <= 339+wx){
-                        editeurColRow = 8;
-                    }
-                    if (x >= 367+wx && x <= 376+wx){
-                        editeurColRow = 9;
-                    }
-                    if (x >= 403+wx && x <= 420+wx){
-                        editeurColRow = 10;
-                    }
-                }
-                if (y >= 352+wy && y <= 362+wy){
-                    if (x >= 246+wx and x <= 253+wx){
-                        editeurCellules = 1;
-                    }
-                    if (x >= 282+wx && x <= 290+wx){
-                        editeurCellules = 2;
-                    }
-                    if (x >= 317+wx && x <= 327+wx){
-                        editeurCellules = 3;
-                    }
-                    if (x >= 353+wx && x <= 363+wx){
-                        editeurCellules = 4;
-                    }
-                    if (x >= 390+wx && x <= 398+wx){
-                        editeurCellules = 5;
-                    }
-                }
-                if (y >= 450+wy && y <= 462+wy){
-                    if (x >= 232+wx and x <= 249+wx){
-                        ++neededScore;
-                    }
-                    if (x >= 286+wx && x <= 304+wx){
-                        neededScore = neededScore + 2;
-                    }
-                    if (x >= 341+wx && x <= 357+wx){
-                        neededScore = neededScore + 5;
-                    }
-                    if (x >= 385+wx && x <= 412+wx){
-                        neededScore = neededScore + 10;
-                    }
-                }
-                if (y >= 550+wy && y <= 562+wy){
-                    if (x >= 259+wx and x <= 276+wx){
-                        ++essai;
-                    }
-                    if (x >= 314+wx && x <= 330+wx){
-                        essai = essai + 2;
-                    }
-                    if (x >= 367+wx && x <= 384+wx){
-                        essai = essai + 5;
-                    }
-                }
-                if (y >= 99+wy && y <= 112+wy && x >= 273+wx && x <= 371+wx){
-                    initMat(mat, 7, editeurCellules, editeurColRow);
-                    inEditeur = 3;
-                }
-                if (y >= 152+wy && y <= 165+wy && x >= 300+wy && x <= 346+wy){
-                    inEditeur = 1;
-                }
-            }
-
-
-
             // Si le joueur clique sur l'une des cases de la cellule
             if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalCellSize &&
                        y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize) {
@@ -723,13 +713,7 @@ void events(MinGL &window, int& level, bool& fullscreen) {
 
 
 // Fonction utilisant MinGL pour dessiner
-void dessiner(MinGL &window, int& level) {
-
-    // On récupère la taille de la fenêtre
-    nsGraphics::Vec2D windowSize;
-    windowSize = window.getWindowSize();
-    int wx = (windowSize.getX() - 640)/2;
-    int wy = (windowSize.getY() - 640)/4;
+void dessiner(MinGL &window, int& level, int wx, int wy) {
 
     // On dessine le bouton pour fermer le jeu
     window << nsShape::Circle(nsGraphics::Vec2D(620+wx*2, 20+wy/10), 10, nsGraphics::KRed);
@@ -797,74 +781,7 @@ void dessiner(MinGL &window, int& level) {
         }
 
         // On dessine le niveau choisi
-        if (level == 1) {
-            if (initMats == false){
-                score = 0;
-                essai = 5;
-                neededScore = 16;
-                initMat(mat, level);
-                initMats = true;
-            } if (essai != 0 && score < neededScore) dessineBoard(window, 5, 50, 5, wx, wy);
-        } else if (level == 2){
-            if (initMats == false){
-                score = 0;
-                essai = 7;
-                neededScore = 18;
-                initMat(mat, level);
-                initMats = true;
-            } if (essai != 0 && score < neededScore) dessineBoard(window, 6, 50, 5, wx, wy);
-        } else if (level == 3){
-            if (initMats == false){
-                score = 0;
-                essai = 8;
-                neededScore = 27;
-                initMat(mat, level);
-                initMats = true;
-            } if (essai != 0 && score < neededScore) dessineBoard(window, 7, 50, 5, wx, wy);
-        } else if (level == 4){
-            if (initMats == false){
-                score = 0;
-                essai = 10;
-                neededScore = 30;
-                initMat(mat, level);
-                initMats = true;
-                if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
-                fullscreen = true;
-            } if (essai != 0 && score < neededScore) dessineBoard(window, 8, 50, 5, wx, wy);
-        } else if (level == 5){
-            if (initMats == false){
-                score = 0;
-                essai = 13;
-                neededScore = 44;
-                initMat(mat, level);
-                initMats = true;
-                if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
-                fullscreen = true;
-            } if (essai != 0 && score < neededScore) dessineBoard(window, 10, 50, 5, wx, wy);
-        } else if (level == 6) {
-            if (initMats == false){
-                randomSize = rand() % 6 + 5;
-                initMat(mat, level, 4);
-                score = 0;
-                essai = randomSize;
-                neededScore = 3 * randomSize;
-                initMats = true;
-                if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
-                fullscreen = true;
-            }
-            if (essai != 0 && score < neededScore) dessineBoard(window, randomSize, 50, 5, wx, wy);
-        } else if (level == 7) {
-            if (inEditeur == 1){
-                editeurCellules = 0;
-                editeurColRow = 0;
-                score = 0;
-                essai = 0;
-                neededScore = 0;
-                inEditeur = 2;
-            }
-            editeurNiveau(window);
-            if (essai != 0 && score < neededScore && inEditeur == 3) dessineBoard(window, editeurColRow, 50, 5, wx, wy);
-        }
+        if (level > 0) initLevel(window, level, wx, wy);
     }
 }
 
@@ -889,6 +806,13 @@ int main() {
     // On fait tourner la boucle tant que la fenêtre est ouverte
     while (window.isOpen())
     {
+
+        // On récupère la taille de la fenêtre
+        nsGraphics::Vec2D windowSize;
+        windowSize = window.getWindowSize();
+        int wx = (windowSize.getX() - 640)/2;
+        int wy = (windowSize.getY() - 640)/4;
+
         // Récupère l'heure actuelle
         chrono::time_point<chrono::steady_clock> start = chrono::steady_clock::now();
 
@@ -896,8 +820,8 @@ int main() {
         window.clearScreen();
 
         // On dessine le texte
-        events(window, level, fullscreen);
-        dessiner(window, level);
+        events(window, level, fullscreen, wx, wy);
+        dessiner(window, level, wx, wy);
         souris(window);
 
         // On finit la frame en cours
