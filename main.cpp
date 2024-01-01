@@ -56,14 +56,17 @@ int clickedRow = 0;
 int essai = 10;
 int inEditeur = 1;
 
+float animationProgress = 0;
+
 bool nvEssai = false;
 bool mouse_clicked = false;
 bool ms = false;
 bool initMats = false;
 bool fullscreen = false;
+bool isSwap = false; // TODO
+bool isHorizontalSwap = false;
 unsigned score (0);
 unsigned neededScore (1);
-bool animation = false; // TODO
 CMatrice mat;
 
 const unsigned KReset   (0);
@@ -434,14 +437,10 @@ void faitUnMouvement (CMatrice & mat) {
     if (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer
         && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow]
         && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer) {
-        animation = true;
 
         // On échange les deux cellules
         swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
 
-        // On detecte et explose
-        detectionExplosionUneBombeHorizontale(mat, score);
-        detectionExplosionUneBombeVerticale(mat, score);
         nvEssai = true;
         clique = 0;
     }
@@ -480,6 +479,10 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
     boardTopLeftX = 320 + wx - (board * totalCellSize) / 2;
     boardTopLeftY = 200 + wy;
 
+    // On detecte et explose
+    detectionExplosionUneBombeHorizontale(mat, score);
+    detectionExplosionUneBombeVerticale(mat, score);
+
     // On dessigne les lignes
     for (int i = 0; i <= boardSize; ++i) {
         int lineCoord = boardTopLeftX + i * totalCellSize;
@@ -494,11 +497,33 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
                                 nsGraphics::Vec2D(lineCoord, boardTopLeftY + boardSize * totalCellSize),
                                 nsGraphics::KWhite);
 
+        // On regarde quel type d'animation faire
+        if (clickedRow - 1 == FirstclickedRow || clickedRow + 1 == FirstclickedRow){
+            isHorizontalSwap = true;
+        }
+
         // On dessine les cellules
         for (int row = 0; row < boardSize; ++row) {
             for (int col = 0; col < boardSize; ++col) {
                 int lineX = boardTopLeftX + col * totalCellSize + gapSize;
                 int lineY = boardTopLeftY + row * totalCellSize + gapSize;
+                // Ajout d'ajustements en fonction du type de swap (horizontal ou vertical)
+                // TODO
+
+                if (isHorizontalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
+                    animationProgress += 0.1;
+                    if (animationProgress < 100) {
+                        if (row == FirstclickedCol && col == FirstclickedRow) lineX += totalCellSize * (clickedRow - FirstclickedRow) * animationProgress / 100;
+                        if (row == clickedCol && col == clickedRow) lineX -= totalCellSize * (clickedRow - FirstclickedRow) * animationProgress / 100;
+                    } else {
+                        if (clique == 2) faitUnMouvement(mat);
+                        animationProgress = 0;
+                        clickedRow = 0;
+                        FirstclickedRow = 5;
+                        isHorizontalSwap = false;
+                    }
+                }
+
                 switch (mat[row][col]) {
                 case 0:
                     // Aucun chiffre, je laisse la cellule vide
@@ -695,11 +720,11 @@ void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
                 clickedRow = (x - boardTopLeftX) / totalCellSize;
                 ++clique;
 
-                cout << "Vous avez cliqué sur la cellule ligne " << clickedCol << ", colonne " << clickedRow << endl;
+                cout << "Vous avez cliqué sur la cellule ligne (col) " << clickedCol << ", colonne (row) " << clickedRow << endl;
                 if (clique == 1){
                     FirstclickedCol = clickedCol;
                     FirstclickedRow = clickedRow;
-                } else if (clique == 2) faitUnMouvement(mat);
+                }
                 break;
             }
             break;
