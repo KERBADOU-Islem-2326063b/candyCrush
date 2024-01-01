@@ -229,7 +229,6 @@ void explosionUneBombeVerticale (CMatrice & mat, const size_t & numLigne,
         mat[numLigne+k][numColonne] = KAIgnorer;
         for(unsigned j = numLigne; j > 0; --j){
             swap(mat[j+k][numColonne], mat[j-1+k][numColonne]);
-            explosionTime = 0.5;
         }
     }
 
@@ -253,8 +252,6 @@ bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
                 auMoinsUneExplosion = true;
                 score += combienALaSuite;
                 explosionUneBombeVerticale (mat, i, j, combienALaSuite);
-                explosionTime = 0.5;
-
             } else if (nvEssai){
                 --essai;
             }
@@ -515,7 +512,7 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
                 // TODO
 
                 if (isHorizontalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
-                    animationProgress += 0.1;
+                    animationProgress += 0.2;
                     inAnimation = true;
                     if (animationProgress < 100.05) {
                         if (row == FirstclickedCol && col == FirstclickedRow) lineX += totalCellSize * (clickedRow - FirstclickedRow) * animationProgress / 100;
@@ -531,13 +528,16 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
                 }
 
                 if (isVerticalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
-                    animationProgress += 0.1;
+                    animationProgress += 0.2;
                     inAnimation = true;
                     if (animationProgress < 100.05) {
                         if (row == FirstclickedCol && col == FirstclickedRow) lineY += totalCellSize * (clickedCol - FirstclickedCol) * animationProgress / 100;
                         if (row == clickedCol && col == clickedRow) lineY -= totalCellSize * (clickedCol - FirstclickedCol) * animationProgress / 100;
                     } else {
-                        if (clique == 2) faitUnMouvement(mat);
+                        if (clique == 2) {
+                            faitUnMouvement(mat);
+                            explosionTime = 0.5;
+                        }
                         animationProgress = 0;
                         clickedRow = 0;
                         FirstclickedRow = 5;
@@ -546,9 +546,6 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
                     }
                 }
 
-                if (explosionTime == 0.5){
-                    explosionTime += 0.1;
-                } else explosionTime = 0;
 
                 switch (mat[row][col]) {
                 case 0:
