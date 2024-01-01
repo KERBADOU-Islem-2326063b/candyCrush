@@ -58,8 +58,8 @@ int inEditeur = 1;
 
 float animationProgress = 0;
 float explosionTime = 0;
+float explosionTime2 = 0;
 
-bool nvEssai = false;
 bool mouse_clicked = false;
 bool ms = false;
 bool initMats = false;
@@ -212,9 +212,6 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
                 auMoinsUneExplosion = true;
                 score += combienALaSuite;
                 explosionUneBombeHorizontale (mat, i, j, combienALaSuite);
-            } else  if (nvEssai){
-                --essai;
-                nvEssai = false;
             }
         }
     }
@@ -252,8 +249,6 @@ bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
                 auMoinsUneExplosion = true;
                 score += combienALaSuite;
                 explosionUneBombeVerticale (mat, i, j, combienALaSuite);
-            } else if (nvEssai){
-                --essai;
             }
         }
     }
@@ -442,9 +437,7 @@ void faitUnMouvement (CMatrice & mat) {
         // On échange les deux cellules
         swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
 
-        nvEssai = true;
-        clique = 0;
-    }
+    } --essai;
     clique = 0;
 }
 
@@ -481,8 +474,17 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
     boardTopLeftY = 200 + wy;
 
     // On detecte et explose
-    detectionExplosionUneBombeHorizontale(mat, score);
-    detectionExplosionUneBombeVerticale(mat, score);
+    if (explosionTime < 100) explosionTime += 1.5;
+    else {
+        detectionExplosionUneBombeHorizontale(mat, score);
+        explosionTime = 0;
+    }
+
+    if (explosionTime2 < 100) explosionTime2 += 1.5;
+    else {
+        detectionExplosionUneBombeVerticale(mat, score);
+        explosionTime2 = 0;
+    }
 
     // On dessigne les lignes
     for (int i = 0; i <= boardSize; ++i) {
