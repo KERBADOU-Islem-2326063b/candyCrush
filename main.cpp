@@ -445,22 +445,31 @@ void menu(MinGL &window, int wx, int wy){
     window << nsGui::Text(nsGraphics::Vec2D(20, 40), "FROMENTIN Felix, GOUGEON Hugo", nsGraphics::KWhite);
     window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Candy Crush", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
     window << nsGui::Text(nsGraphics::Vec2D(330+wx, 200+wy), "Choix du niveau : ", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
     window << nsGui::Text(nsGraphics::Vec2D(320+wx, 230+wy), "Niveau 1", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
     window << nsGui::Text(nsGraphics::Vec2D(320+wx, 260+wy), "Niveau 2", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
     window << nsGui::Text(nsGraphics::Vec2D(320+wx, 290+wy), "Niveau 3", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
     window << nsGui::Text(nsGraphics::Vec2D(320+wx, 320+wy), "Niveau 4", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
     window << nsGui::Text(nsGraphics::Vec2D(320+wx, 350+wy), "Niveau 5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
     window << nsGui::Text(nsGraphics::Vec2D(320+wx, 380+wy), "Niveau aleatoire", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
     window << nsGui::Text(nsGraphics::Vec2D(320+wx, 410+wy), "Editeur de niveau", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
 }
 
 void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int wx = 640, int wy = 640){
@@ -696,11 +705,12 @@ void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
                     cout << "Vous quittez le jeu !" << endl << endl;
                     glutDestroyWindow(1);
                 } else if (x >= 585+wx*2 && x <= 605+wx*2) {
-                    cout << " Vous avez mis en plein écran !!" << endl;
                     if (fullscreen){
                         fullscreen = false;
+                        cout << " Vous avez enlevé le plein écran !!" << endl;
                         window.setWindowSize(nsGraphics::Vec2D(640, 640));
                     } else {
+                        cout << " Vous avez mis en plein écran !!" << endl;
                         fullscreen = true;
                         glutFullScreen();
                     }
@@ -756,13 +766,13 @@ void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
                 clickedRow = (x - boardTopLeftX) / totalCellSize;
 
                 // On verifie que les 2 cellules cliquées sont compatibles
-                if (clique == 1 && (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer
-                                    && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow]
-                                    && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer)){
+                if (clique == 1 && (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1
+                                && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow])
+                                && mat[clickedCol][clickedRow] != KAIgnorer && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer){
                     ++clique;
                 }
 
-                if (clique <= 1) ++clique;
+                if (clique < 1) ++clique;
 
                 cout << "Vous avez cliqué sur la cellule ligne (col) " << clickedCol << ", colonne (row) " << clickedRow << endl;
                 if (clique == 1){
