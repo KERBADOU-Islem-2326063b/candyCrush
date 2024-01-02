@@ -59,14 +59,20 @@ int inEditeur = 1;
 float animationProgress = 0;
 float explosionTime = 0;
 float explosionTime2 = 0;
+float click = false;
 
 bool mouse_clicked = false;
 bool ms = false;
 bool initMats = false;
 bool fullscreen = false;
 bool inAnimation = false;
+bool isSwap = false;
 bool isHorizontalSwap = false;
 bool isVerticalSwap = false;
+bool isDiagonalSwapTL = false;
+bool isDiagonalSwapTR = false;
+bool isDiagonalSwapBL = false;
+bool isDiagonalSwapBR = false;
 unsigned score (0);
 unsigned neededScore (1);
 CMatrice mat;
@@ -429,15 +435,8 @@ void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreD
 
 
 void faitUnMouvement (CMatrice & mat) {
-    // On verifie que le swap est possible dans les regles definies
-    if (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer
-        && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow]
-        && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer) {
-
-        // On échange les deux cellules
-        swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
-
-    } --essai;
+    swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
+    --essai;
     clique = 0;
 }
 
@@ -474,13 +473,13 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
     boardTopLeftY = 200 + wy;
 
     // On detecte et explose
-    if (explosionTime < 100) explosionTime += 1.5;
+    if (explosionTime < 100) explosionTime += 1.1;
     else {
         detectionExplosionUneBombeHorizontale(mat, score);
         explosionTime = 0;
     }
 
-    if (explosionTime2 < 100) explosionTime2 += 1.5;
+    if (explosionTime2 < 100) explosionTime2 += 1.1;
     else {
         detectionExplosionUneBombeVerticale(mat, score);
         explosionTime2 = 0;
@@ -500,9 +499,21 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
                                 nsGraphics::Vec2D(lineCoord, boardTopLeftY + boardSize * totalCellSize),
                                 nsGraphics::KWhite);
 
-        // On regarde quel type d'animation faire
-        if ((clickedRow - 1 == FirstclickedRow || clickedRow + 1 == FirstclickedRow) && clickedCol == FirstclickedCol) isHorizontalSwap = true;
-        if ((clickedCol - 1 == FirstclickedCol || clickedCol + 1 == FirstclickedCol) && clickedRow == FirstclickedRow) isVerticalSwap = true;
+
+        // /!\ A CHANGER /!\ On regarde quel type d'animation faire
+        if (clique == 2){
+
+            if ((clickedRow - 1 == FirstclickedRow || clickedRow + 1 == FirstclickedRow) && clickedCol == FirstclickedCol) isHorizontalSwap = true;
+            if ((clickedCol - 1 == FirstclickedCol || clickedCol + 1 == FirstclickedCol) && clickedRow == FirstclickedRow) isVerticalSwap = true;
+
+            if ((clickedCol - 1 == FirstclickedCol || clickedCol + 1 == FirstclickedCol) && clickedRow == FirstclickedRow) isDiagonalSwapTL = true; // TODO
+            if ((clickedCol - 1 == FirstclickedCol || clickedCol + 1 == FirstclickedCol) && clickedRow == FirstclickedRow) isDiagonalSwapTR = true; // TODO
+            if ((clickedCol - 1 == FirstclickedCol || clickedCol + 1 == FirstclickedCol) && clickedRow == FirstclickedRow) isDiagonalSwapBL = true; // TODO
+            if ((clickedCol - 1 == FirstclickedCol || clickedCol + 1 == FirstclickedCol) && clickedRow == FirstclickedRow) isDiagonalSwapBR = true; // TODO
+
+
+        }
+
 
 
         // On dessine les cellules
@@ -609,7 +620,7 @@ void initLevel(MinGL &window, int level, int wx, int wy){
             neededScore = 30;
             initMat(mat, level);
             initMats = true;
-            if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
+            if (fullscreen == false) glutFullScreen();
             fullscreen = true;
         } if (essai != 0 && score < neededScore) dessineBoard(window, 8, 50, 5, wx, wy);
     } else if (level == 5){
@@ -619,7 +630,7 @@ void initLevel(MinGL &window, int level, int wx, int wy){
             neededScore = 44;
             initMat(mat, level);
             initMats = true;
-            if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
+            if (fullscreen == false) glutFullScreen();
             fullscreen = true;
         } if (essai != 0 && score < neededScore) dessineBoard(window, 10, 50, 5, wx, wy);
     } else if (level == 6) {
@@ -630,7 +641,7 @@ void initLevel(MinGL &window, int level, int wx, int wy){
             essai = randomSize;
             neededScore = 3 * randomSize;
             initMats = true;
-            if (fullscreen == false) window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
+            if (fullscreen == false) glutFullScreen();
             fullscreen = true;
         }
         if (essai != 0 && score < neededScore) dessineBoard(window, randomSize, 50, 5, wx, wy);
@@ -683,7 +694,7 @@ void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
             if (y >= 11+wy/10 && y <= 30+wy/10){
                 if (x >= 610+wx*2 && x <= 632+wx*2){
                     cout << "Vous quittez le jeu !" << endl << endl;
-                    window.stopGraphic();
+                    glutDestroyWindow(1);
                 } else if (x >= 585+wx*2 && x <= 605+wx*2) {
                     cout << " Vous avez mis en plein écran !!" << endl;
                     if (fullscreen){
@@ -691,7 +702,7 @@ void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
                         window.setWindowSize(nsGraphics::Vec2D(640, 640));
                     } else {
                         fullscreen = true;
-                        window.setWindowSize(nsGraphics::Vec2D(1920, 1080));
+                        glutFullScreen();
                     }
                 } else if (x >= 560+wx*2 && x <= 580+wx*2){
                     cout << "Vous retournez au menu !" << endl;
@@ -743,7 +754,15 @@ void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
                 // On calcule l'indice de la cellule
                 clickedCol = (y - boardTopLeftY) / totalCellSize;
                 clickedRow = (x - boardTopLeftX) / totalCellSize;
-                ++clique;
+
+                // On verifie que les 2 cellules cliquées sont compatibles
+                if (clique == 1 && (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1 && mat[clickedCol][clickedRow] != KAIgnorer
+                                    && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow]
+                                    && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer)){
+                    ++clique;
+                }
+
+                if (clique <= 1) ++clique;
 
                 cout << "Vous avez cliqué sur la cellule ligne (col) " << clickedCol << ", colonne (row) " << clickedRow << endl;
                 if (clique == 1){
@@ -835,11 +854,8 @@ void dessiner(MinGL &window, int& level, int wx, int wy) {
     }
 }
 
-// Fonction pour dessiner et animer la souris
 void souris(MinGL &window){
-    // On dessine la souris et l'anime en direct
-    window << nsShape::Triangle(triPos, triPos + nsGraphics::Vec2D(10, 10), nsGraphics::Vec2D(triPos.getX(), triPos.getY()+16), triColor);
-    window << nsShape::Line(nsGraphics::Vec2D(triPos.getX()+3, triPos.getY()+10), nsGraphics::Vec2D(triPos.getX()+8, triPos.getY()+18), triColor, 3.f);
+    glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 }
 
 
@@ -856,12 +872,14 @@ int main() {
     // On fait tourner la boucle tant que la fenêtre est ouverte
     while (window.isOpen())
     {
+        // TESTS A SUPPRIMER
 
         // On récupère la taille de la fenêtre
         nsGraphics::Vec2D windowSize;
         windowSize = window.getWindowSize();
         int wx = (windowSize.getX() - 640)/2;
         int wy = (windowSize.getY() - 640)/4;
+
 
         // Récupère l'heure actuelle
         chrono::time_point<chrono::steady_clock> start = chrono::steady_clock::now();
