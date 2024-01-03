@@ -30,7 +30,6 @@
 using namespace std;
 
 // Initialisation des variables utilisées
-
 typedef unsigned short contenueDUneCase;
 typedef vector <contenueDUneCase> CVLigne; // un type représentant une ligne de la grille
 typedef vector <CVLigne> CMatrice; // un type représentant la grille
@@ -73,8 +72,10 @@ bool isDiagonalSwapTL = false;
 bool isDiagonalSwapTR = false;
 bool isDiagonalSwapBL = false;
 bool isDiagonalSwapBR = false;
+
 unsigned score (0);
 unsigned neededScore (1);
+
 CMatrice mat;
 
 const unsigned KReset   (0);
@@ -218,6 +219,9 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
                 auMoinsUneExplosion = true;
                 score += combienALaSuite;
                 explosionUneBombeHorizontale (mat, i, j, combienALaSuite);
+            } else if (isSwap){
+                --essai;
+                isSwap = false;
             }
         }
     }
@@ -255,6 +259,9 @@ bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
                 auMoinsUneExplosion = true;
                 score += combienALaSuite;
                 explosionUneBombeVerticale (mat, i, j, combienALaSuite);
+            } else if (isSwap){
+                --essai;
+                isSwap = false;
             }
         }
     }
@@ -330,14 +337,12 @@ void editNv (CMatrice & mat){
 
     for (size_t i = 0; i < larg; ++i){
         for(size_t j = 0; j < haut; ++j){
-            afficheMatriceV2(mat, 0 , i, j);
             cout << endl;
             cout << "Quel nombre placer dans la case surlignée ?" << endl;
             cin >> nb;
             mat[i][j] = nb;
         }
     }
-    afficheMatriceV2(mat);
     char choix;
     cout << endl << "Voici votre magnifique niveau, voulez-vous le sauvegarder? (y/n)" << endl;
     cin >> choix;
@@ -406,7 +411,7 @@ void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreD
                     break;
                 } mat[i][j] = randomNumber;
             }
-        } afficheMatriceV2(mat);
+        }
           saveNv(mat, "7");
           break;
     }
@@ -423,7 +428,7 @@ void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreD
                     break;
                 } mat[i][j] = randomNumber;
             }
-        } afficheMatriceV2(mat);
+        }
         saveNv(mat, "7");
         break;
     }
@@ -436,14 +441,14 @@ void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreD
 
 void faitUnMouvement (CMatrice & mat) {
     swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
-    --essai;
+    isSwap = true;
     clique = 0;
 }
 
 void menu(MinGL &window, int wx, int wy){
     window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Fait par : KERBADOU Islem, ODERZO Flavio", nsGraphics::KWhite);
     window << nsGui::Text(nsGraphics::Vec2D(20, 40), "FROMENTIN Felix, GOUGEON Hugo", nsGraphics::KWhite);
-    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Candy Crush", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+    window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Cube Crusher", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                           nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
     window << nsGui::Text(nsGraphics::Vec2D(330+wx, 200+wy), "Choix du niveau : ", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
@@ -482,13 +487,13 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
     boardTopLeftY = 200 + wy;
 
     // On detecte et explose
-    if (explosionTime < 100) explosionTime += 1.1;
+    if (explosionTime < 100) explosionTime += 51.1; // 1.1
     else {
         detectionExplosionUneBombeHorizontale(mat, score);
         explosionTime = 0;
     }
 
-    if (explosionTime2 < 100) explosionTime2 += 1.1;
+    if (explosionTime2 < 100) explosionTime2 += 51.1; // 1.1
     else {
         detectionExplosionUneBombeVerticale(mat, score);
         explosionTime2 = 0;
@@ -556,10 +561,8 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
                         if (row == FirstclickedCol && col == FirstclickedRow) lineY += totalCellSize * (clickedCol - FirstclickedCol) * animationProgress / 100;
                         if (row == clickedCol && col == clickedRow) lineY -= totalCellSize * (clickedCol - FirstclickedCol) * animationProgress / 100;
                     } else {
-                        if (clique == 2) {
-                            faitUnMouvement(mat);
-                            explosionTime = 0.5;
-                        }
+                        faitUnMouvement(mat);
+                        explosionTime = 0.5;
                         animationProgress = 0;
                         clickedRow = 0;
                         FirstclickedRow = 5;
@@ -602,7 +605,7 @@ void initLevel(MinGL &window, int level, int wx, int wy){
         if (initMats == false){
             score = 0;
             essai = 5;
-            neededScore = 16;
+            neededScore = 15;
             initMat(mat, level);
             initMats = true;
         } if (essai != 0 && score < neededScore) dessineBoard(window, 5, 50, 5, wx, wy);
@@ -702,7 +705,7 @@ void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
             // On cherche la position x et y du x afin de oui ou non exécuter un évènement
             if (y >= 11+wy/10 && y <= 30+wy/10){
                 if (x >= 610+wx*2 && x <= 632+wx*2){
-                    cout << "Vous quittez le jeu !" << endl << endl;
+                    cout << "Vous quittez Cube Crusher !" << endl << endl;
                     glutDestroyWindow(1);
                 } else if (x >= 585+wx*2 && x <= 605+wx*2) {
                     if (fullscreen){
@@ -872,7 +875,7 @@ void souris(MinGL &window){
 // Fonction principale du programme
 int main() {
     // Initialise le système
-    MinGL window("Candy Crush", nsGraphics::Vec2D(640, 640), nsGraphics::Vec2D(128, 128), nsGraphics::KPurple);
+    MinGL window("Cube Crusher", nsGraphics::Vec2D(640, 640), nsGraphics::Vec2D(128, 128), nsGraphics::KPurple);
     window.initGlut();
     window.initGraphic();
 
@@ -882,8 +885,6 @@ int main() {
     // On fait tourner la boucle tant que la fenêtre est ouverte
     while (window.isOpen())
     {
-        // TESTS A SUPPRIMER
-
         // On récupère la taille de la fenêtre
         nsGraphics::Vec2D windowSize;
         windowSize = window.getWindowSize();
