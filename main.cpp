@@ -58,6 +58,7 @@ int inEditeur = 1;
 float animationProgress = 0;
 float explosionTime = 0;
 float explosionTime2 = 0;
+float cliqueTime = 0;
 float click = false;
 
 bool mouse_clicked = false;
@@ -487,13 +488,13 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
     boardTopLeftY = 200 + wy;
 
     // On detecte et explose
-    if (explosionTime < 100) explosionTime += 51.1; // 1.1
+    if (explosionTime < 100) explosionTime += 1.1;
     else {
         detectionExplosionUneBombeHorizontale(mat, score);
         explosionTime = 0;
     }
 
-    if (explosionTime2 < 100) explosionTime2 += 51.1; // 1.1
+    if (explosionTime2 < 100) explosionTime2 += 1.1;
     else {
         detectionExplosionUneBombeVerticale(mat, score);
         explosionTime2 = 0;
@@ -517,13 +518,13 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
         // /!\ A CHANGER /!\ On regarde quel type d'animation faire
         if (clique == 2){
 
-            if ((clickedRow - 1 == FirstclickedRow || clickedRow + 1 == FirstclickedRow) && clickedCol == FirstclickedCol) isHorizontalSwap = true;
-            if ((clickedCol - 1 == FirstclickedCol || clickedCol + 1 == FirstclickedCol) && clickedRow == FirstclickedRow) isVerticalSwap = true;
+            if ((FirstclickedRow == clickedRow - 1 || FirstclickedRow == clickedRow + 1) && FirstclickedCol == clickedCol) isHorizontalSwap = true;
+            if ((FirstclickedCol == clickedCol - 1 || FirstclickedCol == clickedCol + 1) && FirstclickedRow == clickedRow) isVerticalSwap = true;
 
-            if ((clickedCol - 1 == FirstclickedCol || clickedCol + 1 == FirstclickedCol) && clickedRow == FirstclickedRow) isDiagonalSwapTL = true; // TODO
-            if ((clickedCol - 1 == FirstclickedCol || clickedCol + 1 == FirstclickedCol) && clickedRow == FirstclickedRow) isDiagonalSwapTR = true; // TODO
-            if ((clickedCol - 1 == FirstclickedCol || clickedCol + 1 == FirstclickedCol) && clickedRow == FirstclickedRow) isDiagonalSwapBL = true; // TODO
-            if ((clickedCol - 1 == FirstclickedCol || clickedCol + 1 == FirstclickedCol) && clickedRow == FirstclickedRow) isDiagonalSwapBR = true; // TODO
+            if ((FirstclickedRow == clickedRow - 1 || FirstclickedRow == clickedRow + 1) && FirstclickedCol == clickedCol) isDiagonalSwapTL = true; // TODO
+            if ((FirstclickedRow == clickedRow - 1 || FirstclickedRow == clickedRow + 1) && FirstclickedCol == clickedCol) isDiagonalSwapTR = true; // TODO
+            if ((FirstclickedRow == clickedRow - 1 || FirstclickedRow == clickedRow + 1) && FirstclickedCol == clickedCol) isDiagonalSwapBL = true; // TODO
+            if ((FirstclickedRow == clickedRow - 1 || FirstclickedRow == clickedRow + 1) && FirstclickedCol == clickedCol) isDiagonalSwapBR = true; // TODO
 
 
         }
@@ -755,7 +756,7 @@ void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
             }
 
             // Si le joueur souhaite recommencer le niveau, on recommence une nouvelle matrice
-            else if (level != 0 && x >= 263+wx &&  x <= 380+wx && y >= 153+wy && y <= 168+wy){
+            else if (level != 0 && x >= 263+wx &&  x <= 380+wx && y >= 118+wy && y <= 133+wy){
                 cout << "Le niveau a été réinitialisé !" << endl;
                 initMats = false;
             }
@@ -773,14 +774,15 @@ void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
                                 && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow])
                                 && mat[clickedCol][clickedRow] != KAIgnorer && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer){
                     ++clique;
-                }
+                } else if (clique == 1) clique = -1;
 
                 if (clique < 1) ++clique;
+                cout << clique << endl;
 
                 cout << "Vous avez cliqué sur la cellule ligne (col) " << clickedCol << ", colonne (row) " << clickedRow << endl;
                 if (clique == 1){
                     FirstclickedCol = clickedCol;
-                    FirstclickedRow = clickedRow;
+                    FirstclickedRow = clickedRow;                    
                 }
                 break;
             }
@@ -818,19 +820,23 @@ void dessiner(MinGL &window, int& level, int wx, int wy) {
         // On dessine le nombre d'essai
         window << nsGui::Text(nsGraphics::Vec2D(20, 40), "Essai(s) : " + to_string(essai), nsGraphics::KWhite);
 
+        if (clique == 1) window << nsGui::Text(nsGraphics::Vec2D(320+wx, 170+wy), "Veuillez cliquer sur un autre cube", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
+
         // On dessine le nom du nouveau (ex: niveau 1)
         if (level > 0 && level < 6){
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 75+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 55+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         }
 
         if (inEditeur != 2){
             // On dessine le nombre de score néscessaire afin de gagner
-            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 110+wy), "Vous avez besoin de " + to_string(neededScore) + " points !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 90+wy), "Vous avez besoin de " + to_string(neededScore) + " points !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
             // On dessine le le texte qui permet au joueur de relancer le niveau
-            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 165+wy), "Recommencer", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 130+wy), "Recommencer", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         } else {
             // On dessine le nombre de score néscessaire afin de gagner
