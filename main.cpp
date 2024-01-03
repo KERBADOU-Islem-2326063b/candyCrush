@@ -61,11 +61,13 @@ float explosionTime2 = 0;
 float cliqueTime = 0;
 float click = false;
 
+bool isClick;
 bool mouse_clicked = false;
 bool ms = false;
 bool initMats = false;
 bool fullscreen = false;
 bool inAnimation = false;
+bool inExplosion = false; // TODO
 bool isSwap = false;
 bool isHorizontalSwap = false;
 bool isVerticalSwap = false;
@@ -672,10 +674,104 @@ void initLevel(MinGL &window, int level, int wx, int wy){
     }
 }
 
+void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
+    glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+
+    // On cherche la position x et y du x afin de oui ou non exécuter un évènement
+    if (y >= 11+wy/10 && y <= 30+wy/10){
+        if (x >= 610+wx*2 && x <= 632+wx*2){
+            if (isClick) glutDestroyWindow(1);
+            else glutSetCursor(GLUT_CURSOR_INFO);
+        } else if (x >= 585+wx*2 && x <= 605+wx*2) {
+            if (fullscreen){
+                if (isClick){
+                    window.setWindowSize(nsGraphics::Vec2D(640, 640));
+                    fullscreen = false;
+                }
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            } else {
+                if (isClick){
+                    fullscreen = true;
+                    glutFullScreen();
+                }
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+        } else if (x >= 560+wx*2 && x <= 580+wx*2){
+            if (isClick){
+                level = 0;
+                initMats = false;
+            }
+            else glutSetCursor(GLUT_CURSOR_INFO);
+        }
+    }
+
+    // Level == 0 correspond au menu, on cherche la position de x et y afin de savoir quel niveau choisir
+    if (level == 0){
+        if (x >= 285+wx && x <= 360+wx){
+            if (y >= 220+wy && y <= 230+wy){
+                if (isClick) ++level;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            } else if (y >= 250+wy && y <= 265+wy){
+                if (isClick) level = 2;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            } else if (y >= 280+wy && y <= 295+wy){
+                if (isClick) level = 3;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            } else if (y >= 310+wy && y <= 325+wy){
+                if (isClick) level = 4;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            } else if (y >= 340+wy && y <= 355+wy){
+                if (isClick) level = 5;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+        } if (level == 0 && x >= 240+wx && x <= 393+wx){
+            if (y >= 370+wy && y <= 382+wy){
+                if (isClick) level = 6;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            } else if (y >= 402+wy && y <= 412+wy){
+                if (isClick) level = 7;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+        }
+    }
+
+    // Si le joueur souhaite recommencer le niveau, on recommence une nouvelle matrice
+    else if (level != 0 && x >= 263+wx &&  x <= 380+wx && y >= 118+wy && y <= 133+wy){
+        if (isClick) initMats = false;
+        else glutSetCursor(GLUT_CURSOR_INFO);
+    }
+
+    // Si le joueur clique sur l'une des cases de la cellule
+    if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalCellSize &&
+        y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize && !(inAnimation) && !(inExplosion)) {
+
+        if (isClick) {
+            // On calcule l'indice de la cellule
+            clickedCol = (y - boardTopLeftY) / totalCellSize;
+            clickedRow = (x - boardTopLeftX) / totalCellSize;
+
+            // On verifie que les 2 cellules cliquées sont compatibles
+            if (clique == 1 && (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1
+                                && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow])
+                && mat[clickedCol][clickedRow] != KAIgnorer && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer){
+                ++clique;
+            } else if (clique == 1) clique = -1;
+
+            if (clique < 1) ++clique;
+            cout << clique << endl;
+
+            cout << "Vous avez cliqué sur la cellule ligne (col) " << clickedCol << ", colonne (row) " << clickedRow << endl;
+            if (clique == 1){
+                FirstclickedCol = clickedCol;
+                FirstclickedRow = clickedRow;
+            }
+        } else glutSetCursor(GLUT_CURSOR_INFO);
+    }
+}
 
 // On calcul les différents events (cliques de la souris, swap, ...)
-void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
-    int x, y;
+void events(MinGL &window, int wx, int wy) {
+    int x, y, realTimeX, realTimeY;
 
     // On vérifie chaque évènement de la queue d'évènements
     while (window.getEventManager().hasEvent())
@@ -689,7 +785,12 @@ void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
             // Il s'agit d'un mouvement de souris
             triPos.setX(actualEvent.eventData.moveData.x);
             triPos.setY(actualEvent.eventData.moveData.y);
+            realTimeX = triPos.getX();
+            realTimeY = triPos.getY();
+            isClick = false;
+            position(window, realTimeX, realTimeY, wx, wy, isClick);
             break;
+
         case nsEvent::EventType_t::MouseClick:
 
             // Il s'agit d'un click de souris
@@ -703,89 +804,8 @@ void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
                 mouse_clicked = true;
             } else mouse_clicked = false;
 
-            // On cherche la position x et y du x afin de oui ou non exécuter un évènement
-            if (y >= 11+wy/10 && y <= 30+wy/10){
-                if (x >= 610+wx*2 && x <= 632+wx*2){
-                    cout << "Vous quittez Cube Crusher !" << endl << endl;
-                    glutDestroyWindow(1);
-                } else if (x >= 585+wx*2 && x <= 605+wx*2) {
-                    if (fullscreen){
-                        fullscreen = false;
-                        cout << " Vous avez enlevé le plein écran !!" << endl;
-                        window.setWindowSize(nsGraphics::Vec2D(640, 640));
-                    } else {
-                        cout << " Vous avez mis en plein écran !!" << endl;
-                        fullscreen = true;
-                        glutFullScreen();
-                    }
-                } else if (x >= 560+wx*2 && x <= 580+wx*2){
-                    cout << "Vous retournez au menu !" << endl;
-                    level = 0;
-                    initMats = false;
-                }
-            }
-
-            // Level == 0 correspond au menu, on cherche la position de x et y afin de savoir quel niveau choisir
-            if (level == 0){
-                if (x >= 285+wx && x <= 360+wx){
-                    if (y >= 220+wy && y <= 230+wy){
-                        cout << "Vous avez choisi le niveau 1 !" << endl;
-                        ++level;
-                    } else if (y >= 250+wy && y <= 265+wy){
-                        cout << "Vous avez choisi le niveau 2 !" << endl;
-                        level = 2;
-                    } else if (y >= 280+wy && y <= 295+wy){
-                        cout << "Vous avez choisi le niveau 3 !" << endl;
-                        level = 3;
-                    } else if (y >= 310+wy && y <= 325+wy){
-                        cout << "Vous avez choisi le niveau 4 !" << endl;
-                        level = 4;
-                    } else if (y >= 340+wy && y <= 355+wy){
-                        cout << "Vous avez choisi le niveau 5 !" << endl;
-                        level = 5;
-                    }
-                } if (level == 0 && x >= 240+wx && x <= 393+wx){
-                    if (y >= 370+wy && y <= 382+wy){
-                        cout << "Niveau aléatoire !" << endl;
-                        level = 6;
-                    } else if (y >= 402+wy && y <= 412+wy){
-                        cout << "Vous êtes dans le menu pour créer un niveau !" << endl;
-                        level = 7;
-                    }
-                }
-            }
-
-            // Si le joueur souhaite recommencer le niveau, on recommence une nouvelle matrice
-            else if (level != 0 && x >= 263+wx &&  x <= 380+wx && y >= 118+wy && y <= 133+wy){
-                cout << "Le niveau a été réinitialisé !" << endl;
-                initMats = false;
-            }
-
-            // Si le joueur clique sur l'une des cases de la cellule
-            if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalCellSize &&
-                y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize && !(inAnimation)) {
-
-                // On calcule l'indice de la cellule
-                clickedCol = (y - boardTopLeftY) / totalCellSize;
-                clickedRow = (x - boardTopLeftX) / totalCellSize;
-
-                // On verifie que les 2 cellules cliquées sont compatibles
-                if (clique == 1 && (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1
-                                && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow])
-                                && mat[clickedCol][clickedRow] != KAIgnorer && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer){
-                    ++clique;
-                } else if (clique == 1) clique = -1;
-
-                if (clique < 1) ++clique;
-                cout << clique << endl;
-
-                cout << "Vous avez cliqué sur la cellule ligne (col) " << clickedCol << ", colonne (row) " << clickedRow << endl;
-                if (clique == 1){
-                    FirstclickedCol = clickedCol;
-                    FirstclickedRow = clickedRow;                    
-                }
-                break;
-            }
+            isClick = true;
+            position(window, x, y, wx, wy, isClick);
             break;
 
         default:
@@ -797,7 +817,7 @@ void events(MinGL &window, int& level, bool& fullscreen, int wx, int wy) {
 
 
 // Fonction utilisant MinGL pour dessiner
-void dessiner(MinGL &window, int& level, int wx, int wy) {
+void dessiner(MinGL &window, int wx, int wy) {
 
     // On dessine le bouton pour fermer le jeu
     window << nsShape::Circle(nsGraphics::Vec2D(620+wx*2, 20+wy/10), 10, nsGraphics::KRed);
@@ -820,7 +840,7 @@ void dessiner(MinGL &window, int& level, int wx, int wy) {
         // On dessine le nombre d'essai
         window << nsGui::Text(nsGraphics::Vec2D(20, 40), "Essai(s) : " + to_string(essai), nsGraphics::KWhite);
 
-        if (clique == 1) window << nsGui::Text(nsGraphics::Vec2D(320+wx, 170+wy), "Veuillez cliquer sur un autre cube", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+        if (clique == 1 && (!(score >= neededScore) || (essai != 0))) window << nsGui::Text(nsGraphics::Vec2D(320+wx, 170+wy), "Veuillez cliquer sur un autre cube", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
 
@@ -873,10 +893,6 @@ void dessiner(MinGL &window, int& level, int wx, int wy) {
     }
 }
 
-void souris(MinGL &window){
-    glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
-}
-
 
 // Fonction principale du programme
 int main() {
@@ -905,9 +921,8 @@ int main() {
         window.clearScreen();
 
         // On dessine le texte
-        events(window, level, fullscreen, wx, wy);
-        dessiner(window, level, wx, wy);
-        souris(window);
+        events(window, wx, wy);
+        dessiner(window, wx, wy);
 
         // On finit la frame en cours
         window.finishFrame();
