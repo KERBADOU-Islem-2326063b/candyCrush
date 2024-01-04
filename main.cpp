@@ -63,7 +63,6 @@ float click = false;
 
 bool isClick;
 bool mouse_clicked = false;
-bool ms = false;
 bool initMats = false;
 bool fullscreen = false;
 bool inAnimation = false;
@@ -71,10 +70,7 @@ bool inExplosion = false; // TODO
 bool isSwap = false;
 bool isHorizontalSwap = false;
 bool isVerticalSwap = false;
-bool isDiagonalSwapTL = false;
-bool isDiagonalSwapTR = false;
-bool isDiagonalSwapBL = false;
-bool isDiagonalSwapBR = false;
+bool isDiagonalSwap = false;
 
 unsigned score (0);
 unsigned neededScore (1);
@@ -490,13 +486,13 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
     boardTopLeftY = 200 + wy;
 
     // On detecte et explose
-    if (explosionTime < 100) explosionTime += 1.1;
+    if (explosionTime < 100) explosionTime += 0.5;
     else {
         detectionExplosionUneBombeHorizontale(mat, score);
         explosionTime = 0;
     }
 
-    if (explosionTime2 < 100) explosionTime2 += 1.1;
+    if (explosionTime2 < 100) explosionTime2 += 0.5;
     else {
         detectionExplosionUneBombeVerticale(mat, score);
         explosionTime2 = 0;
@@ -517,18 +513,12 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
                                 nsGraphics::KWhite);
 
 
-        // /!\ A CHANGER /!\ On regarde quel type d'animation faire
+        // On regarde quel type d'animation faire
         if (clique == 2){
-
             if ((FirstclickedRow == clickedRow - 1 || FirstclickedRow == clickedRow + 1) && FirstclickedCol == clickedCol) isHorizontalSwap = true;
             if ((FirstclickedCol == clickedCol - 1 || FirstclickedCol == clickedCol + 1) && FirstclickedRow == clickedRow) isVerticalSwap = true;
 
-            if ((FirstclickedRow == clickedRow - 1 || FirstclickedRow == clickedRow + 1) && FirstclickedCol == clickedCol) isDiagonalSwapTL = true; // TODO
-            if ((FirstclickedRow == clickedRow - 1 || FirstclickedRow == clickedRow + 1) && FirstclickedCol == clickedCol) isDiagonalSwapTR = true; // TODO
-            if ((FirstclickedRow == clickedRow - 1 || FirstclickedRow == clickedRow + 1) && FirstclickedCol == clickedCol) isDiagonalSwapBL = true; // TODO
-            if ((FirstclickedRow == clickedRow - 1 || FirstclickedRow == clickedRow + 1) && FirstclickedCol == clickedCol) isDiagonalSwapBR = true; // TODO
-
-
+            if ((FirstclickedRow == clickedRow - 1 || FirstclickedRow == clickedRow + 1) && !(FirstclickedCol == clickedCol)) isDiagonalSwap = true;
         }
 
 
@@ -538,8 +528,7 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
             for (int col = 0; col < boardSize; ++col) {
                 int lineX = boardTopLeftX + col * totalCellSize + gapSize;
                 int lineY = boardTopLeftY + row * totalCellSize + gapSize;
-                // Ajout d'ajustements en fonction du type de swap (horizontal ou vertical)
-                // TODO
+                // Ajout d'ajustements en fonction du type de swap (horizontal, vertical et diagonales)
 
                 if (isHorizontalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
                     animationProgress += 0.2;
@@ -573,6 +562,30 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
                         isVerticalSwap = false;
                     }
                 }
+
+                if (isDiagonalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
+                    animationProgress += 0.2;
+                    inAnimation = true;
+                    if (animationProgress < 100.05) {
+                        if (row == FirstclickedCol && col == FirstclickedRow){
+                            lineX += totalCellSize * (clickedRow - FirstclickedRow) * animationProgress / 100;
+                            lineY += totalCellSize * (clickedCol - FirstclickedCol) * animationProgress / 100;
+                        }
+                        if (row == clickedCol && col == clickedRow){
+                            lineX -= totalCellSize * (clickedRow - FirstclickedRow) * animationProgress / 100;
+                            lineY -= totalCellSize * (clickedCol - FirstclickedCol) * animationProgress / 100;
+                        }
+                    } else {
+                        faitUnMouvement(mat);
+                        explosionTime = 0.5;
+                        animationProgress = 0;
+                        clickedRow = 0;
+                        FirstclickedRow = 5;
+                        inAnimation = false;
+                        isDiagonalSwap = false;
+                    }
+                }
+
                 switch (mat[row][col]) {
                 case 0:
                     // Aucun chiffre, je laisse la cellule vide
@@ -673,7 +686,6 @@ void initLevel(MinGL &window, int level, int wx, int wy){
 }
 
 void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
-    int cpt = 0;
     bool arrowCursor = true;
 
     // On cherche la position x et y du x afin de oui ou non exécuter un évènement
@@ -779,11 +791,7 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
             }
         } else if (!isClick) glutSetCursor(GLUT_CURSOR_INFO);
     }
-
-    if (arrowCursor) {
-        glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
-        cpt = 0;
-    }
+    if (arrowCursor) glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 }
 
 // On calcul les différents events (cliques de la souris, swap, ...)
@@ -819,10 +827,10 @@ void events(MinGL &window, int wx, int wy) {
                 clickedY = triPos.getY();
                 cout << "Position x : " << clickedX << " Position y : " << clickedY << endl;
                 mouse_clicked = true;
+                isClick = true;
+                position(window, clickedX, clickedY, wx, wy, isClick);
             } else mouse_clicked = false;
 
-            isClick = true;
-            position(window, clickedX, clickedY, wx, wy, isClick);
             break;
 
         default:
