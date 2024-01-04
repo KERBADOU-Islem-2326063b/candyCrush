@@ -573,8 +573,6 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
                         isVerticalSwap = false;
                     }
                 }
-
-
                 switch (mat[row][col]) {
                 case 0:
                     // Aucun chiffre, je laisse la cellule vide
@@ -675,14 +673,17 @@ void initLevel(MinGL &window, int level, int wx, int wy){
 }
 
 void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
-    glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+    int cpt = 0;
+    bool arrowCursor = true;
 
     // On cherche la position x et y du x afin de oui ou non exécuter un évènement
     if (y >= 11+wy/10 && y <= 30+wy/10){
         if (x >= 610+wx*2 && x <= 632+wx*2){
+            arrowCursor = false;
             if (isClick) glutDestroyWindow(1);
             else glutSetCursor(GLUT_CURSOR_INFO);
         } else if (x >= 585+wx*2 && x <= 605+wx*2) {
+            arrowCursor = false;
             if (fullscreen){
                 if (isClick){
                     window.setWindowSize(nsGraphics::Vec2D(640, 640));
@@ -696,7 +697,8 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
                 }
                 else glutSetCursor(GLUT_CURSOR_INFO);
             }
-        } else if (x >= 560+wx*2 && x <= 580+wx*2){
+        } else if (x >= 560+wx*2 && x <= 580+wx*2 && level != 0){
+            arrowCursor = false;
             if (isClick){
                 level = 0;
                 initMats = false;
@@ -709,26 +711,34 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
     if (level == 0){
         if (x >= 285+wx && x <= 360+wx){
             if (y >= 220+wy && y <= 230+wy){
+                arrowCursor = false;
                 if (isClick) ++level;
                 else glutSetCursor(GLUT_CURSOR_INFO);
             } else if (y >= 250+wy && y <= 265+wy){
+                arrowCursor = false;
                 if (isClick) level = 2;
                 else glutSetCursor(GLUT_CURSOR_INFO);
             } else if (y >= 280+wy && y <= 295+wy){
+                arrowCursor = false;
                 if (isClick) level = 3;
                 else glutSetCursor(GLUT_CURSOR_INFO);
             } else if (y >= 310+wy && y <= 325+wy){
+                arrowCursor = false;
                 if (isClick) level = 4;
                 else glutSetCursor(GLUT_CURSOR_INFO);
             } else if (y >= 340+wy && y <= 355+wy){
+                arrowCursor = false;
                 if (isClick) level = 5;
                 else glutSetCursor(GLUT_CURSOR_INFO);
             }
-        } if (level == 0 && x >= 240+wx && x <= 393+wx){
+        }
+        if (x >= 240+wx && x <= 393+wx){
             if (y >= 370+wy && y <= 382+wy){
+                arrowCursor = false;
                 if (isClick) level = 6;
                 else glutSetCursor(GLUT_CURSOR_INFO);
             } else if (y >= 402+wy && y <= 412+wy){
+                arrowCursor = false;
                 if (isClick) level = 7;
                 else glutSetCursor(GLUT_CURSOR_INFO);
             }
@@ -736,14 +746,16 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
     }
 
     // Si le joueur souhaite recommencer le niveau, on recommence une nouvelle matrice
-    else if (level != 0 && x >= 263+wx &&  x <= 380+wx && y >= 118+wy && y <= 133+wy){
+    if (level != 0 && x >= 263+wx &&  x <= 380+wx && y >= 118+wy && y <= 133+wy){
+        arrowCursor = false;
         if (isClick) initMats = false;
         else glutSetCursor(GLUT_CURSOR_INFO);
     }
 
     // Si le joueur clique sur l'une des cases de la cellule
     if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalCellSize &&
-        y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize && !(inAnimation) && !(inExplosion)) {
+             y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize && !(inAnimation) && !(inExplosion)) {
+        arrowCursor = false;
 
         if (isClick) {
             // On calcule l'indice de la cellule
@@ -765,13 +777,18 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
                 FirstclickedCol = clickedCol;
                 FirstclickedRow = clickedRow;
             }
-        } else glutSetCursor(GLUT_CURSOR_INFO);
+        } else if (!isClick) glutSetCursor(GLUT_CURSOR_INFO);
+    }
+
+    if (arrowCursor) {
+        glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+        cpt = 0;
     }
 }
 
 // On calcul les différents events (cliques de la souris, swap, ...)
 void events(MinGL &window, int wx, int wy) {
-    int x, y, realTimeX, realTimeY;
+    int clickedX, clickedY, realTimeX, realTimeY;
 
     // On vérifie chaque évènement de la queue d'évènements
     while (window.getEventManager().hasEvent())
@@ -798,14 +815,14 @@ void events(MinGL &window, int wx, int wy) {
 
             // On récupère la position de la souris en ignorant en trop le deuxième clique
             if (mouse_clicked == false){
-                x = triPos.getX();
-                y = triPos.getY();
-                cout << "Position x : " << x << " Position y : " << y << endl;
+                clickedX = triPos.getX();
+                clickedY = triPos.getY();
+                cout << "Position x : " << clickedX << " Position y : " << clickedY << endl;
                 mouse_clicked = true;
             } else mouse_clicked = false;
 
             isClick = true;
-            position(window, x, y, wx, wy, isClick);
+            position(window, clickedX, clickedY, wx, wy, isClick);
             break;
 
         default:
@@ -827,7 +844,7 @@ void dessiner(MinGL &window, int wx, int wy) {
     // On dessine le bouton pour mettre en plein écran
     window << nsShape::Line(nsGraphics::Vec2D(588+wx*2, 12+wy/10), nsGraphics::Vec2D(604+wx*2, 12+wy/10), nsGraphics::KWhite, 3.f);
     window << nsShape::Line(nsGraphics::Vec2D(588+wx*2, 12+wy/10), nsGraphics::Vec2D(588+wx*2, 28+wy/10), nsGraphics::KWhite, 3.f);
-    window << nsShape::Line(nsGraphics::Vec2D(588+wx*2, 28+wy/10), nsGraphics::Vec2D(604+wx*2, 28+wy/10), nsGraphics::KWhite, 3.f);
+    window << nsShape::Line(nsGraphics::Vec2D(587+wx*2, 28+wy/10), nsGraphics::Vec2D(604+wx*2, 28+wy/10), nsGraphics::KWhite, 3.f);
     window << nsShape::Line(nsGraphics::Vec2D(604+wx*2, 12+wy/10), nsGraphics::Vec2D(604+wx*2, 28+wy/10), nsGraphics::KWhite, 3.f);
 
     // On dessine le menu
