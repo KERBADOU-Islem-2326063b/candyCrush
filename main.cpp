@@ -801,7 +801,7 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
                 if (swapAllowed) ++clique;
             } else if (clique == 1) clique = -1;
 
-            if (clique < 1) ++clique;
+            if (clique < 1 && swapAllowed) ++clique;
             cout << clique << endl;
 
             cout << "Vous avez cliqué sur la cellule ligne (col) " << clickedCol << ", colonne (row) " << clickedRow << endl;
