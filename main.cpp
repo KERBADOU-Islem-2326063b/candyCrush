@@ -1,7 +1,8 @@
 // TODO
 
 // --PRIORITES--
-// Animation
+// Bugs : on peut swap en pleine explosion
+// Mode facile ou difficile
 // Simplifier le code, faire plus de fonctions peut-être et plus de paramètres
 
 // --SECONDAIRE--
@@ -57,7 +58,6 @@ int inEditeur = 1;
 
 float animationProgress = 0;
 float explosionTime = 0;
-float explosionTime2 = 0;
 float cliqueTime = 0;
 float click = false;
 
@@ -71,6 +71,7 @@ bool isSwap = false;
 bool isHorizontalSwap = false;
 bool isVerticalSwap = false;
 bool isDiagonalSwap = false;
+bool swapAllowed = true;
 
 unsigned score (0);
 unsigned neededScore (1);
@@ -189,10 +190,14 @@ void afficheMatriceV2 (const CMatrice & Mat, const unsigned & score = 0,
 //fait descendre toutes les cases d'une unité suite à une explosition
 void explosionUneBombeHorizontale (CMatrice & mat, const size_t & numLigne,
                                   const size_t & numColonne, const size_t & combien){
+
+    swapAllowed = true;
+    explosionTime = 0;
     for(unsigned k = 0; k < combien; ++k){
         mat[numLigne][numColonne+k] = KAIgnorer;
         for(unsigned j = numLigne; j > 0; --j){
             swap(mat[j][numColonne+k], mat[j-1][numColonne+k]);
+
         }
     }
 
@@ -207,20 +212,29 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
     // sinon on compte combien de fois on a la même valeur
     size_t combienALaSuite (1);
     //si on a aun moins 3 chiffres identiques a la suite
+    if (explosionTime < 100) {
+        if (isSwap) {
+            glutSetCursor(GLUT_CURSOR_WAIT);
+            swapAllowed = false;
+        }
+        explosionTime += 0.5;
+    }
+    else {
+        swapAllowed = true;
+        for(size_t i = 0; i < mat.size(); ++i){
+            for(size_t j = 0; j < mat[i].size(); ++j){
+                if (mat[i][j] == KAIgnorer) continue;
+                combienALaSuite = 1;
 
-    for(size_t i = 0; i < mat.size(); ++i){
-        for(size_t j = 0; j < mat[i].size(); ++j){
-            if (mat[i][j] == KAIgnorer) continue;
-            combienALaSuite = 1;
-
-            for (size_t k (j+1); k < mat[i].size() && mat[i][j] == mat[i][k]; ++k) ++combienALaSuite;
-            if (combienALaSuite >= 3){
-                auMoinsUneExplosion = true;
-                score += combienALaSuite;
-                explosionUneBombeHorizontale (mat, i, j, combienALaSuite);
-            } else if (isSwap){
-                --essai;
-                isSwap = false;
+                for (size_t k (j+1); k < mat[i].size() && mat[i][j] == mat[i][k]; ++k) ++combienALaSuite;
+                if (combienALaSuite >= 3){
+                    auMoinsUneExplosion = true;
+                    score += combienALaSuite;
+                    explosionUneBombeHorizontale (mat, i, j, combienALaSuite);
+                } else if (isSwap){
+                    --essai;
+                    isSwap = false;
+                }
             }
         }
     }
@@ -231,10 +245,14 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
 
 void explosionUneBombeVerticale (CMatrice & mat, const size_t & numLigne,
                                 const size_t & numColonne, const size_t & combien){
+    swapAllowed = true;
+    detectionExplosionUneBombeHorizontale(mat, score);
+    explosionTime = 0;
     for(unsigned k = 0; k < combien; ++k){
         mat[numLigne+k][numColonne] = KAIgnorer;
         for(unsigned j = numLigne; j > 0; --j){
             swap(mat[j+k][numColonne], mat[j-1+k][numColonne]);
+
         }
     }
 
@@ -246,21 +264,32 @@ bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
     //on parcours la matrice case / case
     // si on tombe sur la valeur KAIgnorer, on passe a la case suivante
     // sinon on compte combien de fois on a la même valeur
-    size_t combienALaSuite (1);
-    //si on a aun moins 3 chiffres identiques a la suite
-    for(size_t i = 0; i < mat.size(); ++i){
-        for(size_t j = 0; j < mat[i].size(); ++j){
-            if (mat[i][j] == KAIgnorer) continue;
-            combienALaSuite = 1;
 
-            for (size_t k (i+1); k < mat[i].size () && mat[i][j] == mat[k][j]; ++k) ++combienALaSuite;
-            if (combienALaSuite >= 3){
-                auMoinsUneExplosion = true;
-                score += combienALaSuite;
-                explosionUneBombeVerticale (mat, i, j, combienALaSuite);
-            } else if (isSwap){
-                --essai;
-                isSwap = false;
+    if (explosionTime < 100) {
+        if (isSwap) {
+            glutSetCursor(GLUT_CURSOR_WAIT);
+            swapAllowed = false;
+        }
+        explosionTime += 0.5;
+    }
+    else {
+        swapAllowed = true;
+        size_t combienALaSuite (1);
+        //si on a aun moins 3 chiffres identiques a la suite
+        for(size_t i = 0; i < mat.size(); ++i){
+            for(size_t j = 0; j < mat[i].size(); ++j){
+                if (mat[i][j] == KAIgnorer) continue;
+                combienALaSuite = 1;
+
+                for (size_t k (i+1); k < mat[i].size () && mat[i][j] == mat[k][j]; ++k) ++combienALaSuite;
+                if (combienALaSuite >= 3){
+                    auMoinsUneExplosion = true;
+                    score += combienALaSuite;
+                    explosionUneBombeVerticale (mat, i, j, combienALaSuite);
+                } else if (isSwap){
+                    --essai;
+                    isSwap = false;
+                }
             }
         }
     }
@@ -486,17 +515,9 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
     boardTopLeftY = 200 + wy;
 
     // On detecte et explose
-    if (explosionTime < 100) explosionTime += 0.5;
-    else {
-        detectionExplosionUneBombeHorizontale(mat, score);
-        explosionTime = 0;
-    }
+    detectionExplosionUneBombeHorizontale(mat, score);
+    detectionExplosionUneBombeVerticale(mat, score);
 
-    if (explosionTime2 < 100) explosionTime2 += 0.5;
-    else {
-        detectionExplosionUneBombeVerticale(mat, score);
-        explosionTime2 = 0;
-    }
 
     // On dessigne les lignes
     for (int i = 0; i <= boardSize; ++i) {
@@ -530,7 +551,7 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
                 int lineY = boardTopLeftY + row * totalCellSize + gapSize;
                 // Ajout d'ajustements en fonction du type de swap (horizontal, vertical et diagonales)
 
-                if (isHorizontalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
+                if (swapAllowed && isHorizontalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
                     animationProgress += 0.2;
                     inAnimation = true;
                     if (animationProgress < 100.05) {
@@ -546,14 +567,14 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
                     }
                 }
 
-                if (isVerticalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
+                if (swapAllowed && isVerticalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
                     animationProgress += 0.2;
                     inAnimation = true;
                     if (animationProgress < 100.05) {
                         if (row == FirstclickedCol && col == FirstclickedRow) lineY += totalCellSize * (clickedCol - FirstclickedCol) * animationProgress / 100;
                         if (row == clickedCol && col == clickedRow) lineY -= totalCellSize * (clickedCol - FirstclickedCol) * animationProgress / 100;
                     } else {
-                        faitUnMouvement(mat);
+                        if (clique == 2) faitUnMouvement(mat);
                         explosionTime = 0.5;
                         animationProgress = 0;
                         clickedRow = 0;
@@ -563,7 +584,7 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
                     }
                 }
 
-                if (isDiagonalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
+                if (swapAllowed && isDiagonalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
                     animationProgress += 0.2;
                     inAnimation = true;
                     if (animationProgress < 100.05) {
@@ -576,7 +597,7 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
                             lineY -= totalCellSize * (clickedCol - FirstclickedCol) * animationProgress / 100;
                         }
                     } else {
-                        faitUnMouvement(mat);
+                        if (clique == 2) faitUnMouvement(mat);
                         explosionTime = 0.5;
                         animationProgress = 0;
                         clickedRow = 0;
