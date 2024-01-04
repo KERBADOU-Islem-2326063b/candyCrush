@@ -191,8 +191,6 @@ void afficheMatriceV2 (const CMatrice & Mat, const unsigned & score = 0,
 void explosionUneBombeHorizontale (CMatrice & mat, const size_t & numLigne,
                                   const size_t & numColonne, const size_t & combien){
 
-    swapAllowed = true;
-    explosionTime = 0;
     for(unsigned k = 0; k < combien; ++k){
         mat[numLigne][numColonne+k] = KAIgnorer;
         for(unsigned j = numLigne; j > 0; --j){
@@ -221,6 +219,7 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
     }
     else {
         swapAllowed = true;
+        explosionTime = 0;
         for(size_t i = 0; i < mat.size(); ++i){
             for(size_t j = 0; j < mat[i].size(); ++j){
                 if (mat[i][j] == KAIgnorer) continue;
@@ -245,9 +244,6 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
 
 void explosionUneBombeVerticale (CMatrice & mat, const size_t & numLigne,
                                 const size_t & numColonne, const size_t & combien){
-    swapAllowed = true;
-    detectionExplosionUneBombeHorizontale(mat, score);
-    explosionTime = 0;
     for(unsigned k = 0; k < combien; ++k){
         mat[numLigne+k][numColonne] = KAIgnorer;
         for(unsigned j = numLigne; j > 0; --j){
@@ -274,6 +270,7 @@ bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
     }
     else {
         swapAllowed = true;
+        explosionTime = 0;
         size_t combienALaSuite (1);
         //si on a aun moins 3 chiffres identiques a la suite
         for(size_t i = 0; i < mat.size(); ++i){
