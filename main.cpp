@@ -280,7 +280,6 @@ bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
             for(size_t j = 0; j < mat[i].size(); ++j){
                 if (mat[i][j] == KAIgnorer) continue;
                 combienALaSuite = 1;
-
                 for (size_t k (i+1); k < mat[i].size () && mat[i][j] == mat[k][j]; ++k) ++combienALaSuite;
                 if (combienALaSuite >= 3){
                     auMoinsUneExplosion = true;
@@ -799,7 +798,7 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
             if (clique == 1 && (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1
                                 && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow])
                 && mat[clickedCol][clickedRow] != KAIgnorer && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer){
-                ++clique;
+                if (swapAllowed) ++clique;
             } else if (clique == 1) clique = -1;
 
             if (clique < 1) ++clique;
