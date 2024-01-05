@@ -41,6 +41,7 @@ int editeurCellules = 0;
 
 int randomSize;
 int boardSize;
+int squareType = 1;
 int cellSize = 50;
 int gapSize = 5;
 int totalCellSize = cellSize + gapSize;
@@ -438,7 +439,7 @@ void editeurNiveau(MinGL &window, int x = 0, int y = 0, bool isClick = false){
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 330+wy), "Nombre de cellule(s) differente(s) : " + to_string(editeurCellules), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 360+wy), "1   2   3   4   5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 360+wy), "2   3   4   5   6", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 430+wy), "Nombre de score(s) necessaire(s) : " + to_string(neededScore), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
@@ -477,23 +478,23 @@ void editeurNiveau(MinGL &window, int x = 0, int y = 0, bool isClick = false){
         }
         if (y >= 352+wy && y <= 362+wy){
             if (x >= 246+wx and x <= 253+wx){
-                if (isClick) editeurCellules = 1;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 282+wx && x <= 290+wx){
                 if (isClick) editeurCellules = 2;
                 else glutSetCursor(GLUT_CURSOR_INFO);
             }
-            if (x >= 317+wx && x <= 327+wx){
+            if (x >= 282+wx && x <= 290+wx){
                 if (isClick) editeurCellules = 3;
                 else glutSetCursor(GLUT_CURSOR_INFO);
             }
-            if (x >= 353+wx && x <= 363+wx){
+            if (x >= 317+wx && x <= 327+wx){
                 if (isClick) editeurCellules = 4;
                 else glutSetCursor(GLUT_CURSOR_INFO);
             }
-            if (x >= 390+wx && x <= 398+wx){
+            if (x >= 353+wx && x <= 363+wx){
                 if (isClick) editeurCellules = 5;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 390+wx && x <= 398+wx){
+                if (isClick) editeurCellules = 6;
                 else glutSetCursor(GLUT_CURSOR_INFO);
             }
         }
@@ -528,22 +529,6 @@ void editeurNiveau(MinGL &window, int x = 0, int y = 0, bool isClick = false){
                 if (isClick) essai = essai + 5;
                 else glutSetCursor(GLUT_CURSOR_INFO);
             }
-        }
-        if (x >= 299+wx && x <= 345+wx && y >= 117+wy && y <= 130+wy) {
-            if (isClick) {
-                editeurColRow = 0;
-                editeurCellules = 0;
-                neededScore = 0;
-                essai = 0;
-            }
-            else glutSetCursor(GLUT_CURSOR_INFO);
-        }
-        if (x >= 273+wx && x <= 371+wx && y >= 78+wy && y <= 91+wy){
-            if (isClick){
-                initMat(mat, level, editeurCellules, editeurColRow);
-                inEditeur = 3;
-            }
-            else glutSetCursor(GLUT_CURSOR_INFO);
         }
     }
 }
@@ -876,16 +861,21 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
         arrowCursor = false;
 
         if (isClick) {
+
             // On calcule l'indice de la cellule
             clickedCol = (y - boardTopLeftY) / totalCellSize;
             clickedRow = (x - boardTopLeftX) / totalCellSize;
+
+            // Si on est dans l'editeur de niveau et que l'on souhaite placer un cube
+            if (inEditeur == 3) mat[clickedCol][clickedRow] = squareType;
 
             // On verifie que les 2 cellules cliquées sont compatibles
             if (clique == 1 && (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1
                                 && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow])
                 && mat[clickedCol][clickedRow] != KAIgnorer && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer){
                 if (swapAllowed) ++clique;
-            } else if (clique == 1) clique = -1;
+
+            }
 
             if (clique < 1 && swapAllowed && mat[clickedCol][clickedRow] != KAIgnorer) ++clique;
             cout << clique << endl;
@@ -897,6 +887,32 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
             }
         } else if (!isClick) glutSetCursor(GLUT_CURSOR_INFO);
     }
+
+    if (inEditeur > 1 && x >= 299+wx && x <= 345+wx && y >= 117+wy && y <= 130+wy) {
+        arrowCursor = false;
+        if (isClick && inEditeur == 2) {
+            editeurColRow = 0;
+            neededScore = 0;
+            essai = 0;
+        } else if (isClick && inEditeur ==3) initMat(mat, level, editeurCellules, editeurColRow);
+        else glutSetCursor(GLUT_CURSOR_INFO);
+    }
+    if (inEditeur > 1 && x >= 273+wx && x <= 371+wx && y >= 78+wy && y <= 91+wy){
+        arrowCursor = false;
+        if (isClick){
+            initMat(mat, level, editeurCellules, editeurColRow);
+            inEditeur = 3;
+        }
+        else if (!isClick) glutSetCursor(GLUT_CURSOR_INFO);
+    }
+    if (inEditeur == 3 && x >= -84+wx && x <= -23+wx && y >= 357+wy && y <=370+wy){
+        arrowCursor = false;
+        if (isClick && squareType < editeurCellules){
+            ++squareType;
+        } else if (isClick) squareType = 1;
+        if (!isClick) glutSetCursor(GLUT_CURSOR_INFO);
+    }
+
     if (arrowCursor) glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 }
 
@@ -933,11 +949,10 @@ void events(MinGL &window, int wx, int wy) {
             if (mouse_clicked == false){
                 clickedX = triPos.getX();
                 clickedY = triPos.getY();
-                cout << "Position x : " << clickedX << " Position y : " << clickedY << endl;
+                cout << "Position x : " << clickedX-wx << " Position y : " << clickedY-wy << endl;
                 mouse_clicked = true;
                 isClick = true;
                 position(window, clickedX, clickedY, wx, wy, isClick);
-                if (inEditeur == 3) mat[clickedCol][clickedRow] = 1;
                 if (inEditeur == 2) editeurNiveau(window , clickedX, clickedY, isClick);
             } else mouse_clicked = false;
 
@@ -1002,8 +1017,34 @@ void dessiner(MinGL &window, int wx, int wy) {
             window << nsGui::Text(nsGraphics::Vec2D(320+wx, 130+wy), "Reset", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
-            if (inEditeur == 3) window << nsGui::Text(nsGraphics::Vec2D(320+wx, 165+wy), "Placez vos carres", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+            if (inEditeur == 3) {
+                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 165+wy), "Placez vos carres", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                       nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+                window << nsGui::Text(nsGraphics::Vec2D(-55 + wx, 370+wy), "Suivant", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                                      nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+                window << nsGui::Text(nsGraphics::Vec2D(-50 + wx, 400+wy), "Carre actuel : ", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                                      nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+                switch(squareType){
+                    case 1:
+                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 420+wy), nsGraphics::Vec2D(-25+wx, 480 + wy), nsGraphics::KBlue);
+                        break;
+                    case 2:
+                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 420+wy), nsGraphics::Vec2D(-25+wx, 480 + wy), nsGraphics::KRed);
+                        break;
+                    case 3:
+                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 420+wy), nsGraphics::Vec2D(-25+wx, 480 + wy), nsGraphics::KBlack);
+                        break;
+                    case 4:
+                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 420+wy), nsGraphics::Vec2D(-25+wx, 480 + wy), nsGraphics::KYellow);
+                        break;
+                    case 5:
+                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 420+wy), nsGraphics::Vec2D(-25+wx, 480 + wy), nsGraphics::KGreen);
+                        break;
+                    case 6:
+                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 420+wy), nsGraphics::Vec2D(-25+wx, 480 + wy), nsGraphics::KWhite);
+                        break;
+                }
+            }
         }
 
         // On dessine la flèche pour retourner au menu
