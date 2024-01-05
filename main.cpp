@@ -208,8 +208,7 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
     //on parcours la matrice case / case
     // si on tombe sur la valeur KAIgnorer, on passe a la case suivante
     // sinon on compte combien de fois on a la même valeur
-    size_t combienALaSuite (1);
-    //si on a aun moins 3 chiffres identiques a la suite
+
     if (explosionTime < 100) {
         if (isSwap) {
             glutSetCursor(GLUT_CURSOR_WAIT);
@@ -220,11 +219,12 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
     else {
         swapAllowed = true;
         explosionTime = 0;
+        size_t combienALaSuite (1);
+        //si on a aun moins 3 chiffres identiques a la suite
         for(size_t i = 0; i < mat.size(); ++i){
             for(size_t j = 0; j < mat[i].size(); ++j){
                 if (mat[i][j] == KAIgnorer) continue;
                 combienALaSuite = 1;
-
                 for (size_t k (j+1); k < mat[i].size() && mat[i][j] == mat[i][k]; ++k) ++combienALaSuite;
                 if (combienALaSuite >= 3){
                     auMoinsUneExplosion = true;
@@ -269,7 +269,6 @@ bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
         explosionTime += 0.5;
     }
     else {
-        swapAllowed = true;
         explosionTime = 0;
         size_t combienALaSuite (1);
         //si on a aun moins 3 chiffres identiques a la suite
@@ -289,7 +288,6 @@ bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
             }
         }
     }
-
     return auMoinsUneExplosion;
 }
 
@@ -436,8 +434,8 @@ void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreD
                 } mat[i][j] = randomNumber;
             }
         }
-          saveNv(mat, "7");
-          break;
+        saveNv(mat, "7");
+        break;
     }
     case 7:
     {
@@ -511,8 +509,8 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
     boardTopLeftY = 200 + wy;
 
     // On detecte et explose
-    detectionExplosionUneBombeHorizontale(mat, score);
     detectionExplosionUneBombeVerticale(mat, score);
+    detectionExplosionUneBombeHorizontale(mat, score);
 
 
     // On dessigne les lignes
@@ -783,7 +781,7 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
 
     // Si le joueur clique sur l'une des cases de la cellule
     if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalCellSize &&
-             y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize && !(inAnimation) && !(inExplosion)) {
+        y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize && !(inAnimation) && !(inExplosion)) {
         arrowCursor = false;
 
         if (isClick) {
@@ -798,7 +796,7 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
                 if (swapAllowed) ++clique;
             } else if (clique == 1) clique = -1;
 
-            if (clique < 1 && swapAllowed) ++clique;
+            if (clique < 1 && swapAllowed && mat[clickedCol][clickedRow] != KAIgnorer) ++clique;
             cout << clique << endl;
 
             cout << "Vous avez cliqué sur la cellule ligne (col) " << clickedCol << ", colonne (row) " << clickedRow << endl;
@@ -888,8 +886,8 @@ void dessiner(MinGL &window, int wx, int wy) {
 
         // On dessine le nom du nouveau (ex: niveau 1)
         if (level > 0 && level < 6){
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 55+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 55+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         }
 
         if (inEditeur != 2){
