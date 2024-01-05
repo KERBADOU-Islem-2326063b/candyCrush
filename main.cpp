@@ -770,7 +770,7 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
     }
 
     // Si le joueur souhaite recommencer le niveau, on recommence une nouvelle matrice
-    if (level != 0 && x >= 263+wx &&  x <= 380+wx && y >= 118+wy && y <= 133+wy){
+    if (level != 0 && inEditeur != 2 && x >= 263+wx &&  x <= 380+wx && y >= 118+wy && y <= 133+wy){
         arrowCursor = false;
         if (isClick) initMats = false;
         else glutSetCursor(GLUT_CURSOR_INFO);
