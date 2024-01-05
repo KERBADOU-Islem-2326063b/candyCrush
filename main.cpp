@@ -59,7 +59,6 @@ int inEditeur = 1;
 float animationProgress = 0;
 float explosionTime = 0;
 
-bool isClick;
 bool mouse_clicked = false;
 bool initMats = false;
 bool fullscreen = false;
@@ -810,6 +809,7 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
 // On calcul les différents events (cliques de la souris, swap, ...)
 void events(MinGL &window, int wx, int wy) {
     int clickedX, clickedY, realTimeX, realTimeY;
+    bool isClick;
 
     // On vérifie chaque évènement de la queue d'évènements
     while (window.getEventManager().hasEvent())
