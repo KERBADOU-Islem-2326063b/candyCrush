@@ -58,19 +58,14 @@ int inEditeur = 1;
 
 float animationProgress = 0;
 float explosionTime = 0;
-float cliqueTime = 0;
-float click = false;
 
 bool isClick;
 bool mouse_clicked = false;
 bool initMats = false;
 bool fullscreen = false;
 bool inAnimation = false;
-bool inExplosion = false; // TODO
+bool inExplosion = false;
 bool isSwap = false;
-bool isHorizontalSwap = false;
-bool isVerticalSwap = false;
-bool isDiagonalSwap = false;
 bool swapAllowed = true;
 
 unsigned score (0);
@@ -507,6 +502,9 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
     totalCellSize = cell + gap;
     boardTopLeftX = 320 + wx - (board * totalCellSize) / 2;
     boardTopLeftY = 200 + wy;
+    bool isHorizontalSwap = false;
+    bool isVerticalSwap = false;
+    bool isDiagonalSwap = false;
 
     // On detecte et explose
     detectionExplosionUneBombeVerticale(mat, score);
