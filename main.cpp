@@ -21,6 +21,8 @@
 #include <thread>
 #include <fstream>
 
+
+#include <yaml-cpp/yaml.h>
 #include "MinGL2_IUT_AIX/include/mingl/mingl.h"
 #include "MinGL2_IUT_AIX/include/mingl/gui/text.h"
 #include "MinGL2_IUT_AIX/include/mingl/shape/line.h"
@@ -72,114 +74,13 @@ unsigned neededScore (1);
 
 CMatrice mat;
 
-const unsigned KReset   (0);
-const unsigned KNoir    (30);
-const unsigned KRouge   (31);
-const unsigned KVert    (32);
-const unsigned KJaune   (33);
-const unsigned KBleu    (34);
-const unsigned KMagenta (35);
-const unsigned KCyan    (36);
-const unsigned KBlanc   (37);
+YAML::Node config = YAML::LoadFile("config.yaml");
 
-const contenueDUneCase KAIgnorer = 0;
-const contenueDUneCase KPlusGrandNombreDansLaMatrice = 4;
+const contenueDUneCase KAIgnorer = config["KAIgnorer"].as<unsigned>();
+const contenueDUneCase KPlusGrandNombreDansLaMatrice = config["KPlusGrandNombre"].as<unsigned>();
 
 nsGraphics::Vec2D triPos;
 nsGraphics::RGBAcolor triColor = nsGraphics::KWhite;
-
-void clearScreen () {
-    cout << "\033[H\033[2J";
-}
-
-
-void couleur (const unsigned & coul) {
-    cout << "\033[" << coul << "m";
-}
-
-void fond (const unsigned & coul) {
-    cout << "\033[" << coul + 10 << "m";
-}
-
-
-// affichage de la matrice sans les numéros de lignes / colonnes en haut / à gauche
-void  afficheMatriceV0 (const CMatrice & Mat) {
-    for (size_t i = 0; i < Mat.size(); ++i){
-        for(size_t j = 0; j < Mat[i].size(); ++j){
-            switch(Mat[i][j]){
-            case 1: couleur(KReset); break;
-            case 2: couleur(KNoir); break;
-            case 3: couleur(KRouge); break;
-            case 4: couleur(KJaune); break;
-            case 5: couleur(KBleu); break;
-            case 6: couleur(KMagenta); break;
-            case 7: couleur(KVert); break;
-            default: couleur(KCyan); break;
-            }
-            cout << Mat[i][j] << " ";
-            couleur(KReset);
-        }
-        cout << endl;
-    }
-}
-// affichage de la matrice sans les numéros de lignes / colonnes en haut / à gauche, mais avec un fond de couleur
-//pour signifier que la case est a KAIgnorer
-void  afficheMatriceV1 (const CMatrice & Mat) {
-    for (size_t i = 0; i < Mat.size(); ++i){
-        for(size_t j = 0; j < Mat[i].size(); ++j){
-            switch(Mat[i][j]){
-            case 1: couleur(KReset); break;
-            case 2: couleur(KNoir); break;
-            case 3: couleur(KRouge); break;
-            case 4: couleur(KJaune); break;
-            case 5: couleur(KBleu); break;
-            case 6: couleur(KMagenta); break;
-            case 7: couleur(KVert); break;
-            default: couleur(KCyan); break;
-            }
-            if (Mat[i][j] == KAIgnorer) fond(KRouge);
-            cout << Mat[i][j] << " ";
-            couleur(KReset);
-        }
-        cout << endl;
-    }
-}
-
-
-// affichage de la matrice avec les numéros de lignes / colonnes en haut / à gauche et avec un fond de couleur
-//pour signifier que la case est a KAIgnorer
-void afficheMatriceV2 (const CMatrice & Mat, const unsigned & score = 0,
-                      const unsigned & rowSelect = 99, const unsigned & colSelect = 99) {
-    cout << "   | ";
-    for (size_t x = 0; x <= Mat.size(); ++x){
-        if (x == 0) continue;
-        cout << x << " | ";
-    }
-    if (score > 0) cout << string(10, ' ') << "Score: " << score;
-    cout << endl;
-    for (size_t i = 0; i < Mat.size(); ++i){
-        cout << setw(2) << i + 1 << " | ";
-        for(size_t j = 0; j < Mat[i].size(); ++j){
-            switch(Mat[i][j]){
-            case 1: couleur(KReset); break;
-            case 2: couleur(KVert); break;
-            case 3: couleur(KRouge); break;
-            case 4: couleur(KJaune); break;
-            case 5: couleur(KBleu); break;
-            case 6: couleur(KMagenta); break;
-            case 7: couleur(KNoir); break;
-            default: couleur(KCyan); break;
-            }
-            if (i == rowSelect && j == colSelect && colSelect != 99 && rowSelect != 99) fond(KBlanc);
-            if (Mat[i][j] == KAIgnorer) fond(KRouge);
-            cout << Mat[i][j];
-            couleur(KReset);
-            cout << " | ";
-        }
-        cout << endl;
-    }
-}
-
 
 //fait descendre toutes les cases d'une unité suite à une explosition
 void explosionUneBombeHorizontale (CMatrice & mat, const size_t & numLigne,
@@ -247,7 +148,9 @@ void explosionUneBombeVerticale (CMatrice & mat, const size_t & numLigne,
     }
 
 }
-
+/*
+ @brief Detecte si 3 chiffres identiques ou plus sont alignés verticalement.
+ */
 bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
     bool auMoinsUneExplosion (false);
 
@@ -938,6 +841,7 @@ int main() {
     MinGL window("Cube Crusher", nsGraphics::Vec2D(640, 640), nsGraphics::Vec2D(128, 128), nsGraphics::KPurple);
     window.initGlut();
     window.initGraphic();
+
 
     // Variable qui tient le temps de frame
     chrono::microseconds frameTime = chrono::microseconds::zero();
