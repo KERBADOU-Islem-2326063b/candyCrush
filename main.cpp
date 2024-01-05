@@ -268,7 +268,7 @@ void editNv (CMatrice & mat){
     if (choix == 'y') saveNv(mat, nomNv);
 };
 
-void editeurNiveau(MinGL &window){
+void editeurNiveau(MinGL &window, int x = 0, int y = 0, bool isClick = false){
     // On récupère la taille de la fenêtre
     nsGraphics::Vec2D windowSize;
     windowSize = window.getWindowSize();
@@ -293,6 +293,96 @@ void editeurNiveau(MinGL &window){
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         window << nsGui::Text(nsGraphics::Vec2D(320+wx, 560+wy), "+1    +2    +5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
                               nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
+        if (y >= 250+wy && y <= 260+wy){
+            if (x >= 222+wx and x <= 230+wx){
+                if (isClick) editeurColRow = 5;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 259+wx && x <= 267+wx){
+                if (isClick) editeurColRow = 6;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 296+wx && x <= 303+wx){
+                if (isClick) editeurColRow = 7;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 331+wx && x <= 339+wx){
+                if (isClick) editeurColRow = 8;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 367+wx && x <= 376+wx){
+                if (isClick) editeurColRow = 9;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 403+wx && x <= 420+wx){
+                if (isClick) editeurColRow = 10;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+        }
+        if (y >= 352+wy && y <= 362+wy){
+            if (x >= 246+wx and x <= 253+wx){
+                if (isClick) editeurCellules = 1;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 282+wx && x <= 290+wx){
+                if (isClick) editeurCellules = 2;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 317+wx && x <= 327+wx){
+                if (isClick) editeurCellules = 3;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 353+wx && x <= 363+wx){
+                if (isClick) editeurCellules = 4;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 390+wx && x <= 398+wx){
+                if (isClick) editeurCellules = 5;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+        }
+        if (y >= 450+wy && y <= 462+wy){
+            if (x >= 232+wx and x <= 249+wx){
+                if (isClick) ++neededScore;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 286+wx && x <= 304+wx){
+                if (isClick) neededScore = neededScore + 2;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 341+wx && x <= 357+wx){
+                if (isClick) neededScore = neededScore + 5;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 385+wx && x <= 412+wx){
+                if (isClick) neededScore = neededScore + 10;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+        }
+        if (y >= 550+wy && y <= 562+wy){
+            if (x >= 259+wx and x <= 276+wx){
+                if (isClick) ++essai;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 314+wx && x <= 330+wx){
+                if (isClick) essai = essai + 2;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 367+wx && x <= 384+wx){
+                if (isClick) essai = essai + 5;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+        }
+        if (x >= 299 && x <= 345 && y >= 152 && y <= 165) {
+            if (isClick) {
+                editeurColRow = 0;
+                editeurCellules = 0;
+                neededScore = 0;
+                essai = 0;
+            }
+            else glutSetCursor(GLUT_CURSOR_INFO);
+        }
     }
 }
 
@@ -600,7 +690,7 @@ void initLevel(MinGL &window, int level, int wx, int wy){
     }
 }
 
-void position(MinGL &window, int x, int y, int wx, int wy, bool &isClick){
+void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
     bool arrowCursor = true;
 
     // On cherche la position x et y du x afin de oui ou non exécuter un évènement
@@ -730,6 +820,7 @@ void events(MinGL &window, int wx, int wy) {
             realTimeY = triPos.getY();
             isClick = false;
             position(window, realTimeX, realTimeY, wx, wy, isClick);
+            if (inEditeur == 2) editeurNiveau(window, realTimeX, realTimeY, isClick);
             break;
 
         case nsEvent::EventType_t::MouseClick:
@@ -745,6 +836,7 @@ void events(MinGL &window, int wx, int wy) {
                 mouse_clicked = true;
                 isClick = true;
                 position(window, clickedX, clickedY, wx, wy, isClick);
+                if (inEditeur == 2) editeurNiveau(window, clickedX, clickedY, isClick);
             } else mouse_clicked = false;
 
             break;
