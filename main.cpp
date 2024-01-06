@@ -878,7 +878,7 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
             if (clique == 1 && (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1
                                 && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow])
                 && mat[clickedCol][clickedRow] != KAIgnorer && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer){
-                if (swapAllowed && inEditeur > 3) ++clique;
+                if (swapAllowed && ((level > 0 && level < 7) || inEditeur > 3)) ++clique;
 
             }
 
@@ -915,7 +915,10 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
                     if (mat[i][j] == KAIgnorer) filled = false;
                 }
             }
-            if (inEditeur == 3 && filled) inEditeur = 4;
+            if (inEditeur == 3 && filled){
+                clique = 0;
+                inEditeur = 4;
+            }
             else filled = true;
         }
         else if (!isClick) glutSetCursor(GLUT_CURSOR_INFO);
@@ -1005,7 +1008,7 @@ void dessiner(MinGL &window, int wx, int wy) {
         // On dessine le nombre d'essai
         window << nsGui::Text(nsGraphics::Vec2D(20, 40), "Essai(s) : " + to_string(essai), nsGraphics::KWhite);
 
-        if (clique == 1 && inEditeur < 3 && (!(score >= neededScore) || (essai != 0))) window << nsGui::Text(nsGraphics::Vec2D(320+wx, 170+wy), "Veuillez cliquer sur un autre cube", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+        if (clique == 1 && ((level > 0 && level < 7) || inEditeur > 3) && (!(score >= neededScore) || (essai != 0))) window << nsGui::Text(nsGraphics::Vec2D(320+wx, 170+wy), "Veuillez cliquer sur un autre cube", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
 
