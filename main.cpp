@@ -66,6 +66,7 @@ bool fullscreen = false;
 bool inAnimation = false;
 bool inExplosion = false;
 bool isSwap = false;
+bool filled = true;
 bool swapAllowed = true;
 
 unsigned score (0);
@@ -583,7 +584,7 @@ void dessineBoard(MinGL &window, int board = 5, int wx = 640, int wy = 640){
 
     // On detecte et explose, on verifie egalement que l'on soit pas dans l'editeur de niveau
     if (inEditeur != 3) detectionExplosionUneBombeVerticale(mat, score);
-    if (inEditeur != 3)detectionExplosionUneBombeHorizontale(mat, score);
+    if (inEditeur != 3) detectionExplosionUneBombeHorizontale(mat, score);
 
 
     // On dessigne les lignes
@@ -764,14 +765,15 @@ void initLevel(MinGL &window, int level, int wx, int wy){
             editeurColRow = 5;
             editeurCellules = 2;
             score = 0;
-            essai = 0;
-            neededScore = 0;
+            essai = 1;
+            neededScore = 1;
             inEditeur = 2;
             if (fullscreen == false) glutFullScreen();
             fullscreen = true;
         }
         if (inEditeur == 2) editeurNiveau(window);
         if (inEditeur == 3) dessineBoard(window, editeurColRow, wx, wy);
+        if (inEditeur == 4 && (essai != 0 && score < neededScore)) dessineBoard(window, editeurColRow, wx, wy);
     }
 }
 
@@ -849,9 +851,12 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
     }
 
     // Si le joueur souhaite recommencer le niveau, on recommence une nouvelle matrice
-    if (level != 0 && inEditeur < 2 && x >= 263+wx &&  x <= 380+wx && y >= 118+wy && y <= 133+wy){
+    if (((level > 0 && level < 7) || inEditeur > 3)  && x >= 263+wx &&  x <= 380+wx && y >= 118+wy && y <= 133+wy){
         arrowCursor = false;
-        if (isClick) initMats = false;
+        if (isClick && (level > 0 && level < 7)) {
+            initMats = false;
+        }
+        else if (isClick && inEditeur > 3) inEditeur = 2;
         else glutSetCursor(GLUT_CURSOR_INFO);
     }
 
@@ -873,7 +878,7 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
             if (clique == 1 && (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1
                                 && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow])
                 && mat[clickedCol][clickedRow] != KAIgnorer && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer){
-                if (swapAllowed && inEditeur != 3) ++clique;
+                if (swapAllowed && inEditeur > 3) ++clique;
 
             }
 
@@ -893,21 +898,29 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
         if (isClick && inEditeur == 2) {
             editeurColRow = 5;
             editeurCellules = 2;
-            neededScore = 0;
-            essai = 0;
+            neededScore = 1;
+            essai = 1;
         } else if (isClick && inEditeur ==3) initMat(mat, level, editeurCellules, editeurColRow);
         else glutSetCursor(GLUT_CURSOR_INFO);
     }
     if (inEditeur > 1 && x >= 273+wx && x <= 371+wx && y >= 78+wy && y <= 91+wy){
         arrowCursor = false;
         if (isClick){
-            initMat(mat, level, editeurCellules, editeurColRow);
-            if (inEditeur == 2) inEditeur = 3;
-            // if (inEditeur == 3) inEditeur = 4; // TODO
+            if (inEditeur == 2){
+                initMat(mat, level, editeurCellules, editeurColRow);
+                inEditeur = 3;
+            }
+            for(size_t i = 0; i < mat.size(); ++i){
+                for(size_t j = 0; j < mat[i].size(); ++j){
+                    if (mat[i][j] == KAIgnorer) filled = false;
+                }
+            }
+            if (inEditeur == 3 && filled) inEditeur = 4;
+            else filled = true;
         }
         else if (!isClick) glutSetCursor(GLUT_CURSOR_INFO);
     }
-    if (inEditeur == 3 && x >= -84+wx && x <= -23+wx && y >= 357+wy && y <=370+wy){
+    if (inEditeur == 3 && x >= -84+wx && x <= -23+wx && y >= 257+wy && y <=270+wy){
         arrowCursor = false;
         if (isClick && squareType < editeurCellules){
             ++squareType;
@@ -992,17 +1005,20 @@ void dessiner(MinGL &window, int wx, int wy) {
         // On dessine le nombre d'essai
         window << nsGui::Text(nsGraphics::Vec2D(20, 40), "Essai(s) : " + to_string(essai), nsGraphics::KWhite);
 
-        if (clique == 1 && inEditeur != 3 && (!(score >= neededScore) || (essai != 0))) window << nsGui::Text(nsGraphics::Vec2D(320+wx, 170+wy), "Veuillez cliquer sur un autre cube", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+        if (clique == 1 && inEditeur < 3 && (!(score >= neededScore) || (essai != 0))) window << nsGui::Text(nsGraphics::Vec2D(320+wx, 170+wy), "Veuillez cliquer sur un autre cube", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
 
         // On dessine le nom du nouveau (ex: niveau 1)
-        if (level > 0 && level < 6){
+        if (level > 0 && level < 7){
             window << nsGui::Text(nsGraphics::Vec2D(320+wx, 55+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        } else if (inEditeur == 4){
+            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 55+wy), "Niveau personnalise", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         }
 
-        if (inEditeur < 2){
+        if ((level > 0 && level < 7) || inEditeur > 3){
             // On dessine le nombre de score néscessaire afin de gagner
             window << nsGui::Text(nsGraphics::Vec2D(320+wx, 90+wy), "Vous avez besoin de " + to_string(neededScore) + " points !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
@@ -1010,7 +1026,8 @@ void dessiner(MinGL &window, int wx, int wy) {
             // On dessine le le texte qui permet au joueur de relancer le niveau
             window << nsGui::Text(nsGraphics::Vec2D(320+wx, 130+wy), "Recommencer", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        } else {
+
+        } else if (inEditeur > 1 && inEditeur < 4) {
             // On dessine le nombre de score néscessaire afin de gagner
             window << nsGui::Text(nsGraphics::Vec2D(320+wx, 90+wy), "Suivant", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
@@ -1022,28 +1039,28 @@ void dessiner(MinGL &window, int wx, int wy) {
             if (inEditeur == 3) {
                 window << nsGui::Text(nsGraphics::Vec2D(320+wx, 165+wy), "Placez vos carres", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                       nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-                window << nsGui::Text(nsGraphics::Vec2D(-55 + wx, 370+wy), "Suivant", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                window << nsGui::Text(nsGraphics::Vec2D(-55 + wx, 270+wy), "Suivant", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                       nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-                window << nsGui::Text(nsGraphics::Vec2D(-50 + wx, 400+wy), "Carre actuel : ", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                window << nsGui::Text(nsGraphics::Vec2D(-50 + wx, 300+wy), "Carre actuel : ", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                       nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
                 switch(squareType){
                     case 1:
-                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 420+wy), nsGraphics::Vec2D(-25+wx, 480 + wy), nsGraphics::KBlue);
+                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 320+wy), nsGraphics::Vec2D(-25+wx, 380 + wy), nsGraphics::KBlue);
                         break;
                     case 2:
-                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 420+wy), nsGraphics::Vec2D(-25+wx, 480 + wy), nsGraphics::KRed);
+                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 320+wy), nsGraphics::Vec2D(-25+wx, 380 + wy), nsGraphics::KRed);
                         break;
                     case 3:
-                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 420+wy), nsGraphics::Vec2D(-25+wx, 480 + wy), nsGraphics::KBlack);
+                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 320+wy), nsGraphics::Vec2D(-25+wx, 380 + wy), nsGraphics::KBlack);
                         break;
                     case 4:
-                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 420+wy), nsGraphics::Vec2D(-25+wx, 480 + wy), nsGraphics::KYellow);
+                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 320+wy), nsGraphics::Vec2D(-25+wx, 380 + wy), nsGraphics::KYellow);
                         break;
                     case 5:
-                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 420+wy), nsGraphics::Vec2D(-25+wx, 480 + wy), nsGraphics::KGreen);
+                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 320+wy), nsGraphics::Vec2D(-25+wx, 380 + wy), nsGraphics::KGreen);
                         break;
                     case 6:
-                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 420+wy), nsGraphics::Vec2D(-25+wx, 480 + wy), nsGraphics::KWhite);
+                        window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 320+wy), nsGraphics::Vec2D(-25+wx, 380 + wy), nsGraphics::KWhite);
                         break;
                 }
             }
@@ -1054,7 +1071,7 @@ void dessiner(MinGL &window, int wx, int wy) {
         window << nsShape::Line(nsGraphics::Vec2D(570+wx*2, 20+wy/10), nsGraphics::Vec2D(580+wx*2, 20+wy/10), nsGraphics::KWhite, 3.f);
 
         // Si le joueur a atteint le score demandé, alors il a gagné le niveau ou s'il n'a plus d'essai, il a perdu
-        if ((score >= neededScore || (essai == 0 && score < neededScore)) && inEditeur == 1){
+        if ((score >= neededScore || (essai == 0 && score < neededScore)) && (inEditeur > 3)){
             // On affiche le message pour que le joueur puisse recommencer une partie
             window << nsGui::Text(nsGraphics::Vec2D(320+wx, 280+wy), "VOUS POUVEZ RECOMMENCER !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
