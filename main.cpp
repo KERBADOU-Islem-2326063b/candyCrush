@@ -761,8 +761,8 @@ void initLevel(MinGL &window, int level, int wx, int wy){
         if (essai != 0 && score < neededScore) dessineBoard(window, randomSize, wx, wy);
     } else if (level == 7) {
         if (inEditeur == 1){
-            editeurCellules = 0;
-            editeurColRow = 0;
+            editeurColRow = 5;
+            editeurCellules = 2;
             score = 0;
             essai = 0;
             neededScore = 0;
@@ -873,7 +873,7 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
             if (clique == 1 && (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1
                                 && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow])
                 && mat[clickedCol][clickedRow] != KAIgnorer && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer){
-                if (swapAllowed) ++clique;
+                if (swapAllowed && inEditeur != 3) ++clique;
 
             }
 
@@ -891,7 +891,8 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
     if (inEditeur > 1 && x >= 299+wx && x <= 345+wx && y >= 117+wy && y <= 130+wy) {
         arrowCursor = false;
         if (isClick && inEditeur == 2) {
-            editeurColRow = 0;
+            editeurColRow = 5;
+            editeurCellules = 2;
             neededScore = 0;
             essai = 0;
         } else if (isClick && inEditeur ==3) initMat(mat, level, editeurCellules, editeurColRow);
@@ -901,7 +902,8 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
         arrowCursor = false;
         if (isClick){
             initMat(mat, level, editeurCellules, editeurColRow);
-            inEditeur = 3;
+            if (inEditeur == 2) inEditeur = 3;
+            // if (inEditeur == 3) inEditeur = 4; // TODO
         }
         else if (!isClick) glutSetCursor(GLUT_CURSOR_INFO);
     }
