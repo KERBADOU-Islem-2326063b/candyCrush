@@ -1,0 +1,3 @@
+[submodule "MinGL2_IUT_AIX"]
+	path = MinGL2_IUT_AIX
+	url = ./MinGL2_IUT_AIX/
