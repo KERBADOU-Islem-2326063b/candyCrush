@@ -1,16 +1,7 @@
-// TODO
-
-// --PRIORITES--
-// Bugs : on peut swap en pleine explosion
-// Mode facile ou difficile
-// Simplifier le code, faire plus de fonctions peut-être et plus de paramètres
-
-// --SECONDAIRE--
-// Editeur de niveau pleins de bugs (enleve 1 et 2 pour cellule, quand on a fini le niveau y a pas marqué t'as gagné
-// et le bouton recommencer ne marche pas
-
-// Editeur de niveau placer les cellules nous mêmes
-
+/**
+ * @author Flavio Oderzo, Islem Kerbadou, Felix Fromentin, Hugo Gougeon
+ *
+ **/
 
 #define FPS_LIMIT 60
 
@@ -21,8 +12,8 @@
 #include <thread>
 #include <fstream>
 
-
 #include <yaml-cpp/yaml.h>
+
 #include "MinGL2_IUT_AIX/include/mingl/mingl.h"
 #include "MinGL2_IUT_AIX/include/mingl/gui/text.h"
 #include "MinGL2_IUT_AIX/include/mingl/shape/line.h"
@@ -38,28 +29,28 @@ typedef vector <contenueDUneCase> CVLigne; // un type représentant une ligne de
 typedef vector <CVLigne> CMatrice; // un type représentant la grille
 
 
-int editeurColRow = 0;
-int editeurCellules = 0;
+unsigned tailleNvEditeur (0);
+unsigned editeurCellules (0);
 
-int randomSize;
-int boardSize;
-int cellSize;
-int gapSize;
-int totalCellSize;
-int boardTopLeftX;
-int boardTopLeftY;
+unsigned boardSize;
+unsigned squareType (1);
+unsigned cellSize (50);
+unsigned gapSize (5);
+unsigned totalTailleCell (cellSize + gapSize);
+unsigned boardTopLeftX;
+unsigned boardTopLeftY;
 
-int level = 0;
-int clique = 0;
-int FirstclickedCol = 0;
-int FirstclickedRow = 0;
-int clickedCol = 0;
-int clickedRow = 0;
-int essai = 10;
-int inEditeur = 1;
+unsigned level (0);
+unsigned clique (0);
+unsigned premierClicCol (0);
+unsigned premierClicLigne (0);
+unsigned clicCol (0);
+unsigned clicLigne (0);
+unsigned essai (10);
+unsigned inEditeur (1);
 
-float animationProgress = 0;
-float explosionTime = 0;
+float animationProgres (0);
+float explosionTime (0);
 
 bool mouse_clicked = false;
 bool initMats = false;
@@ -67,22 +58,133 @@ bool fullscreen = false;
 bool inAnimation = false;
 bool inExplosion = false;
 bool isSwap = false;
+bool filled = true;
 bool swapAllowed = true;
 
 unsigned score (0);
-unsigned neededScore (1);
+unsigned scoreMinimum (1);
 
 CMatrice mat;
 
-YAML::Node config = YAML::LoadFile("config.yaml");
+const unsigned KReset   (0);
+const unsigned KNoir    (30);
+const unsigned KRouge   (31);
+const unsigned KVert    (32);
+const unsigned KJaune   (33);
+const unsigned KBleu    (34);
+const unsigned KMagenta (35);
+const unsigned KCyan    (36);
+const unsigned KBlanc   (37);
 
-const contenueDUneCase KAIgnorer = config["KAIgnorer"].as<unsigned>();
-const contenueDUneCase KPlusGrandNombreDansLaMatrice = config["KPlusGrandNombre"].as<unsigned>();
+// initialisation de la configuration du fichier yaml
+YAML::Node params = YAML::LoadFile("config.yaml");
+
+const contenueDUneCase KAIgnorer = params["KAIgnorer"].as<unsigned>();
+const contenueDUneCase KPlusGrandNombreDansLaMatrice = params["KPlusGrandNombre"].as<unsigned>();
+const unsigned nvAleatoireTaille = params["TailleNiveauAleatoire"].as<unsigned>();
 
 nsGraphics::Vec2D triPos;
 nsGraphics::RGBAcolor triColor = nsGraphics::KWhite;
 
-//fait descendre toutes les cases d'une unité suite à une explosition
+void clearScreen () {
+    cout << "\033[H\033[2J";
+}
+
+void couleur (const unsigned & coul) {
+    cout << "\033[" << coul << "m";
+}
+
+void fond (const unsigned & coul) {
+    cout << "\033[" << coul + 10 << "m";
+}
+
+
+/*
+ * @brief Obsolète, affiche dans la console la matrice du jeu.
+ */
+void  afficheMatriceV0 (const CMatrice & Mat) {
+    for (size_t i = 0; i < Mat.size(); ++i){
+        for(size_t j = 0; j < Mat[i].size(); ++j){
+            switch(Mat[i][j]){
+            case 1: couleur(KReset); break;
+            case 2: couleur(KNoir); break;
+            case 3: couleur(KRouge); break;
+            case 4: couleur(KJaune); break;
+            case 5: couleur(KBleu); break;
+            case 6: couleur(KMagenta); break;
+            case 7: couleur(KVert); break;
+            default: couleur(KCyan); break;
+            }
+            cout << Mat[i][j] << " ";
+            couleur(KReset);
+        }
+        cout << endl;
+    }
+}
+
+/*
+ * @brief Obsolète, affiche dans la console la matrice du jeu avec un fond de couleur sur les cases vides.
+ */
+void  afficheMatriceV1 (const CMatrice & Mat) {
+    for (size_t i = 0; i < Mat.size(); ++i){
+        for(size_t j = 0; j < Mat[i].size(); ++j){
+            switch(Mat[i][j]){
+            case 1: couleur(KReset); break;
+            case 2: couleur(KNoir); break;
+            case 3: couleur(KRouge); break;
+            case 4: couleur(KJaune); break;
+            case 5: couleur(KBleu); break;
+            case 6: couleur(KMagenta); break;
+            case 7: couleur(KVert); break;
+            default: couleur(KCyan); break;
+            }
+            if (Mat[i][j] == KAIgnorer) fond(KRouge);
+            cout << Mat[i][j] << " ";
+            couleur(KReset);
+        }
+        cout << endl;
+    }
+}
+
+/*
+ * @brief Obsolète, affiche dans la console la matrice du jeu avec les numéros de lignes et colonnes, et avec un fond de couleur sur les cases vides.
+ */
+void afficheMatriceV2 (const CMatrice & Mat, const unsigned & score = 0,
+                      const unsigned & rowSelect = 99, const unsigned & colSelect = 99) {
+    cout << "   | ";
+    for (size_t x = 0; x <= Mat.size(); ++x){
+        if (x == 0) continue;
+        cout << x << " | ";
+    }
+    if (score > 0) cout << string(10, ' ') << "Score: " << score;
+    cout << endl;
+    for (size_t i = 0; i < Mat.size(); ++i){
+        cout << setw(2) << i + 1 << " | ";
+        for(size_t j = 0; j < Mat[i].size(); ++j){
+            switch(Mat[i][j]){
+            case 1: couleur(KReset); break;
+            case 2: couleur(KVert); break;
+            case 3: couleur(KRouge); break;
+            case 4: couleur(KJaune); break;
+            case 5: couleur(KBleu); break;
+            case 6: couleur(KMagenta); break;
+            case 7: couleur(KNoir); break;
+            default: couleur(KCyan); break;
+            }
+            if (i == rowSelect && j == colSelect && colSelect != 99 && rowSelect != 99) fond(KBlanc);
+            if (Mat[i][j] == KAIgnorer) fond(KRouge);
+            cout << Mat[i][j];
+            couleur(KReset);
+            cout << " | ";
+        }
+        cout << endl;
+    }
+}
+
+
+/*
+ * @brief Retire des carrés alignés à la verticale et fait descendre ceux d'au dessus.
+ */
 void explosionUneBombeHorizontale (CMatrice & mat, const size_t & numLigne,
                                   const size_t & numColonne, const size_t & combien){
 
@@ -96,7 +198,9 @@ void explosionUneBombeHorizontale (CMatrice & mat, const size_t & numLigne,
 
 }
 
-//
+/*
+ * @brief Détecte les carrés alignés à l'horizontale.
+ */
 bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
     bool auMoinsUneExplosion (false);
 
@@ -104,7 +208,7 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
     // si on tombe sur la valeur KAIgnorer, on passe a la case suivante
     // sinon on compte combien de fois on a la même valeur
 
-    if (explosionTime < 100) {
+    if (explosionTime < 50) { // Temps avant l'explosion des carrés
         if (isSwap) {
             glutSetCursor(GLUT_CURSOR_WAIT);
             swapAllowed = false;
@@ -136,7 +240,9 @@ bool detectionExplosionUneBombeHorizontale (CMatrice & mat, unsigned & score){
 }
 
 
-
+/*
+ * @brief Retire des carrés alignés à la verticale et fait descendre ceux d'au dessus.
+ */
 void explosionUneBombeVerticale (CMatrice & mat, const size_t & numLigne,
                                 const size_t & numColonne, const size_t & combien){
     for(unsigned k = 0; k < combien; ++k){
@@ -148,8 +254,9 @@ void explosionUneBombeVerticale (CMatrice & mat, const size_t & numLigne,
     }
 
 }
+
 /*
- @brief Detecte si 3 chiffres identiques ou plus sont alignés verticalement.
+ * @brief Détecte les explosions à la verticale.
  */
 bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
     bool auMoinsUneExplosion (false);
@@ -158,7 +265,7 @@ bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
     // si on tombe sur la valeur KAIgnorer, on passe a la case suivante
     // sinon on compte combien de fois on a la même valeur
 
-    if (explosionTime < 100) {
+    if (explosionTime < 50) { // Temps avant l'explosion des carrés
         if (isSwap) {
             glutSetCursor(GLUT_CURSOR_WAIT);
             swapAllowed = false;
@@ -188,6 +295,9 @@ bool detectionExplosionUneBombeVerticale (CMatrice & mat, unsigned & score){
     return auMoinsUneExplosion;
 }
 
+/*
+ * @brief Obsolète, importe un niveau par le terminal à partir d'une entrée du nom d'un fichier texte.
+ */
 void importNv(CMatrice & mat, const string & nomNv){
     ifstream fichNv;
     fichNv.open(nomNv);
@@ -216,6 +326,9 @@ void importNv(CMatrice & mat, const string & nomNv){
     fichNv.close();
 }
 
+/*
+ * @brief Sauvegarde l'état actuel de la matrice dans un fichier texte nommé.
+ */
 void saveNv (CMatrice & mat, const string & nomNv){
     ofstream fichNv;
     unsigned haut, larg;
@@ -236,6 +349,9 @@ void saveNv (CMatrice & mat, const string & nomNv){
     fichNv.close();
 }
 
+/*
+ * @brief Obsolète, editeur de niveau via le terminal.
+ */
 void editNv (CMatrice & mat){
     string nomNv;
 
@@ -268,129 +384,14 @@ void editNv (CMatrice & mat){
     if (choix == 'y') saveNv(mat, nomNv);
 };
 
-void editeurNiveau(MinGL &window, int x = 0, int y = 0, bool isClick = false){
-    // On récupère la taille de la fenêtre
-    nsGraphics::Vec2D windowSize;
-    windowSize = window.getWindowSize();
-    int wx = (windowSize.getX() - 640)/2;
-    int wy = (windowSize.getY() - 640)/4;
 
-    if (inEditeur == 2){
-        // On affiche les choix disponibles
-        window << nsGui::Text(nsGraphics::Vec2D(330+wx, 230+wy), "Nombre de ligne(s) et colonne(s) : " + to_string(editeurColRow), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 260+wy), "5   6   7   8   9   10", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 330+wy), "Nombre de cellule(s) differente(s) : " + to_string(editeurCellules), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 360+wy), "1   2   3   4   5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 430+wy), "Nombre de score(s) necessaire(s) : " + to_string(neededScore), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 460+wy), "+1    +2    +5   +10", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 530+wy), "Nombre d'essai(s) : " + to_string(essai), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 560+wy), "+1    +2    +5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
-                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
-        if (y >= 250+wy && y <= 260+wy){
-            if (x >= 222+wx and x <= 230+wx){
-                if (isClick) editeurColRow = 5;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 259+wx && x <= 267+wx){
-                if (isClick) editeurColRow = 6;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 296+wx && x <= 303+wx){
-                if (isClick) editeurColRow = 7;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 331+wx && x <= 339+wx){
-                if (isClick) editeurColRow = 8;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 367+wx && x <= 376+wx){
-                if (isClick) editeurColRow = 9;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 403+wx && x <= 420+wx){
-                if (isClick) editeurColRow = 10;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-        }
-        if (y >= 352+wy && y <= 362+wy){
-            if (x >= 246+wx and x <= 253+wx){
-                if (isClick) editeurCellules = 1;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 282+wx && x <= 290+wx){
-                if (isClick) editeurCellules = 2;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 317+wx && x <= 327+wx){
-                if (isClick) editeurCellules = 3;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 353+wx && x <= 363+wx){
-                if (isClick) editeurCellules = 4;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 390+wx && x <= 398+wx){
-                if (isClick) editeurCellules = 5;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-        }
-        if (y >= 450+wy && y <= 462+wy){
-            if (x >= 232+wx and x <= 249+wx){
-                if (isClick) ++neededScore;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 286+wx && x <= 304+wx){
-                if (isClick) neededScore = neededScore + 2;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 341+wx && x <= 357+wx){
-                if (isClick) neededScore = neededScore + 5;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 385+wx && x <= 412+wx){
-                if (isClick) neededScore = neededScore + 10;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-        }
-        if (y >= 550+wy && y <= 562+wy){
-            if (x >= 259+wx and x <= 276+wx){
-                if (isClick) ++essai;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 314+wx && x <= 330+wx){
-                if (isClick) essai = essai + 2;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-            if (x >= 367+wx && x <= 384+wx){
-                if (isClick) essai = essai + 5;
-                else glutSetCursor(GLUT_CURSOR_INFO);
-            }
-        }
-        if (x >= 299 && x <= 345 && y >= 152 && y <= 165) {
-            if (isClick) {
-                editeurColRow = 0;
-                editeurCellules = 0;
-                neededScore = 0;
-                essai = 0;
-            }
-            else glutSetCursor(GLUT_CURSOR_INFO);
-        }
-    }
-}
-
-void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreDansLaMatrice, int editeur = 5) {
+void initMat(CMatrice &mat, const unsigned & niveau, const unsigned &nbMax = KPlusGrandNombreDansLaMatrice,
+             const unsigned & tailleNiveauPerso = 5) {
     string lvlName;
     size_t randomNumber;
     clique = 0;
-    switch (level)
+    switch (niveau)
     {
     case 1:
         importNv(mat, "1.txt");
@@ -407,12 +408,12 @@ void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreD
     case 5:
         importNv(mat, "5.txt");
         break;
-    case 6:
+    case 6: // niveau aléatoire
     {
-        mat.resize(randomSize);
-        for (int i = 0; i < randomSize; ++i) {
-            mat[i].resize(randomSize);
-            for (int j = 0; j < randomSize; ++j) {
+        mat.resize(nvAleatoireTaille);
+        for (unsigned i = 0; i < nvAleatoireTaille; ++i) {
+            mat[i].resize(nvAleatoireTaille);
+            for (unsigned j = 0; j < nvAleatoireTaille; ++j) {
                 while (true) {
                     randomNumber = rand() % nbMax + 1;
                     if ((j >= 2 && randomNumber == mat[i][j - 1] && randomNumber == mat[i][j - 2]) ||
@@ -424,18 +425,13 @@ void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreD
         saveNv(mat, "7");
         break;
     }
-    case 7:
+    case 7: // dans le cas où on est dans l'éditeur de niveaux
     {
-        mat.resize(editeur);
-        for (int i = 0; i < editeur; ++i) {
-            mat[i].resize(editeur);
-            for (int j = 0; j < editeur; ++j) {
-                while (true) {
-                    randomNumber = rand() % nbMax + 1;
-                    if ((j >= 2 && randomNumber == mat[i][j - 1] && randomNumber == mat[i][j - 2]) ||
-                        (i >= 2 && randomNumber == mat[i - 1][j] && randomNumber == mat[i - 2][j])) continue;
-                    break;
-                } mat[i][j] = randomNumber;
+        mat.resize(tailleNiveauPerso);
+        for (unsigned i = 0; i < tailleNiveauPerso; ++i) {
+            mat[i].resize(tailleNiveauPerso);
+            for (unsigned j = 0; j < tailleNiveauPerso; ++j) {
+                mat[i][j] = KAIgnorer;
             }
         }
         saveNv(mat, "7");
@@ -447,14 +443,123 @@ void initMat(CMatrice &mat, int level, const unsigned &nbMax = KPlusGrandNombreD
     }
 }
 
+void editeurNiveau(MinGL &window, const unsigned & x = 0, const unsigned & y = 0, const bool & isClick = false){
+    // On récupère la taille de la fenêtre
+    nsGraphics::Vec2D windowSize;
+    windowSize = window.getWindowSize();
+    unsigned wx = (windowSize.getX() - 640)/2;
+    unsigned wy = (windowSize.getY() - 640)/4;
+
+    if (inEditeur == 2){
+        // On affiche les choix disponibles
+        window << nsGui::Text(nsGraphics::Vec2D(330+wx, 230+wy), "Nombre de ligne(s) et colonne(s) : " + to_string(tailleNvEditeur), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 260+wy), "5   6   7   8   9   10", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 330+wy), "Nombre de cellule(s) differente(s) : " + to_string(editeurCellules), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 360+wy), "2   3   4   5   6", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 430+wy), "Nombre de score(s) necessaire(s) : " + to_string(scoreMinimum), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 460+wy), "+1    +2    +5   +10", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 530+wy), "Nombre d'essai(s) : " + to_string(essai), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        window << nsGui::Text(nsGraphics::Vec2D(320+wx, 560+wy), "+1    +2    +5", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
+                              nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
+        if (y >= 250+wy && y <= 260+wy){
+            if (x >= 222+wx and x <= 230+wx){
+                if (isClick) tailleNvEditeur = 5;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 259+wx && x <= 267+wx){
+                if (isClick) tailleNvEditeur = 6;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 296+wx && x <= 303+wx){
+                if (isClick) tailleNvEditeur = 7;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 331+wx && x <= 339+wx){
+                if (isClick) tailleNvEditeur = 8;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 367+wx && x <= 376+wx){
+                if (isClick) tailleNvEditeur = 9;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 403+wx && x <= 420+wx){
+                if (isClick) tailleNvEditeur = 10;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+        }
+        if (y >= 352+wy && y <= 362+wy){
+            if (x >= 246+wx and x <= 253+wx){
+                if (isClick) editeurCellules = 2;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 282+wx && x <= 290+wx){
+                if (isClick) editeurCellules = 3;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 317+wx && x <= 327+wx){
+                if (isClick) editeurCellules = 4;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 353+wx && x <= 363+wx){
+                if (isClick) editeurCellules = 5;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 390+wx && x <= 398+wx){
+                if (isClick) editeurCellules = 6;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+        }
+        if (y >= 450+wy && y <= 462+wy){
+            if (x >= 232+wx and x <= 249+wx){
+                if (isClick) ++scoreMinimum;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 286+wx && x <= 304+wx){
+                if (isClick) scoreMinimum += 2;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 341+wx && x <= 357+wx){
+                if (isClick) scoreMinimum += 5;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 385+wx && x <= 412+wx){
+                if (isClick) scoreMinimum += 10;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+        }
+        if (y >= 550+wy && y <= 562+wy){
+            if (x >= 259+wx and x <= 276+wx){
+                if (isClick) ++essai;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 314+wx && x <= 330+wx){
+                if (isClick) essai += 2;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+            if (x >= 367+wx && x <= 384+wx){
+                if (isClick) essai += 5;
+                else glutSetCursor(GLUT_CURSOR_INFO);
+            }
+        }
+    }
+}
+
 
 void faitUnMouvement (CMatrice & mat) {
-    swap(mat[FirstclickedCol][FirstclickedRow], mat[clickedCol][clickedRow]);
+    swap(mat[premierClicCol][premierClicLigne], mat[clicCol][clicLigne]);
     isSwap = true;
     clique = 0;
 }
 
-void menu(MinGL &window, int wx, int wy){
+void menu(MinGL &window, const int & wx, const int & wy){
     window << nsGui::Text(nsGraphics::Vec2D(20, 20), "Fait par : KERBADOU Islem, ODERZO Flavio", nsGraphics::KWhite);
     window << nsGui::Text(nsGraphics::Vec2D(20, 40), "FROMENTIN Felix, GOUGEON Hugo", nsGraphics::KWhite);
     window << nsGui::Text(nsGraphics::Vec2D(320+wx, 160+wy), "Cube Crusher", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_9_BY_15,
@@ -486,106 +591,104 @@ void menu(MinGL &window, int wx, int wy){
 
 }
 
-void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int wx = 640, int wy = 640){
+void dessineBoard(MinGL &window, const unsigned & board = 5, const unsigned & wx = 640, const unsigned & wy = 640){
     // On initialise les variables néscessaire pour faire le tableau
     boardSize = board;
-    cellSize = cell;
-    gapSize = gap;
-    totalCellSize = cell + gap;
-    boardTopLeftX = 320 + wx - (board * totalCellSize) / 2;
+    boardTopLeftX = 320 + wx - (board * totalTailleCell) / 2;
     boardTopLeftY = 200 + wy;
     bool isHorizontalSwap = false;
     bool isVerticalSwap = false;
     bool isDiagonalSwap = false;
 
-    // On detecte et explose
-    detectionExplosionUneBombeVerticale(mat, score);
-    detectionExplosionUneBombeHorizontale(mat, score);
+    // On detecte et explose, on verifie egalement que l'on soit pas dans l'editeur de niveau
+    if (inEditeur != 3) detectionExplosionUneBombeVerticale(mat, score);
+    if (inEditeur != 3) detectionExplosionUneBombeHorizontale(mat, score);
 
 
     // On dessigne les lignes
-    for (int i = 0; i <= boardSize; ++i) {
-        int lineCoord = boardTopLeftX + i * totalCellSize;
+    for (unsigned i = 0; i <= boardSize; ++i) {
+        unsigned lineCoord = boardTopLeftX + i * totalTailleCell;
 
         // On dessine les lignes vertival
-        window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, boardTopLeftY + i * totalCellSize),
-                                nsGraphics::Vec2D(boardTopLeftX + boardSize * totalCellSize, boardTopLeftY + i * totalCellSize),
+        window << nsShape::Line(nsGraphics::Vec2D(boardTopLeftX, boardTopLeftY + i * totalTailleCell),
+                                nsGraphics::Vec2D(boardTopLeftX + boardSize * totalTailleCell, boardTopLeftY + i * totalTailleCell),
                                 nsGraphics::KWhite);
 
         // On dessine les lignes horizontal
         window << nsShape::Line(nsGraphics::Vec2D(lineCoord, boardTopLeftY),
-                                nsGraphics::Vec2D(lineCoord, boardTopLeftY + boardSize * totalCellSize),
+                                nsGraphics::Vec2D(lineCoord, boardTopLeftY + boardSize * totalTailleCell),
                                 nsGraphics::KWhite);
 
 
         // On regarde quel type d'animation faire
         if (clique == 2){
-            if ((FirstclickedRow == clickedRow - 1 || FirstclickedRow == clickedRow + 1) && FirstclickedCol == clickedCol) isHorizontalSwap = true;
-            if ((FirstclickedCol == clickedCol - 1 || FirstclickedCol == clickedCol + 1) && FirstclickedRow == clickedRow) isVerticalSwap = true;
+            if ((premierClicLigne == clicLigne - 1 || premierClicLigne == clicLigne + 1) && premierClicCol == clicCol) isHorizontalSwap = true;
 
-            if ((FirstclickedRow == clickedRow - 1 || FirstclickedRow == clickedRow + 1) && !(FirstclickedCol == clickedCol)) isDiagonalSwap = true;
+            else if ((premierClicCol == clicCol - 1 || premierClicCol == clicCol + 1) && premierClicLigne == clicLigne) isVerticalSwap = true;
+
+            else if ((premierClicLigne == clicLigne - 1 || premierClicLigne == clicLigne + 1) && !(premierClicCol == clicCol)) isDiagonalSwap = true;
         }
 
 
 
         // On dessine les cellules
-        for (int row = 0; row < boardSize; ++row) {
-            for (int col = 0; col < boardSize; ++col) {
-                int lineX = boardTopLeftX + col * totalCellSize + gapSize;
-                int lineY = boardTopLeftY + row * totalCellSize + gapSize;
+        for (unsigned row = 0; row < boardSize; ++row) {
+            for (unsigned col = 0; col < boardSize; ++col) {
+                unsigned lineX = boardTopLeftX + col * totalTailleCell + gapSize;
+                unsigned lineY = boardTopLeftY + row * totalTailleCell + gapSize;
                 // Ajout d'ajustements en fonction du type de swap (horizontal, vertical et diagonales)
 
-                if (swapAllowed && isHorizontalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
-                    animationProgress += 0.2;
+                if (swapAllowed && isHorizontalSwap && ((row == premierClicCol && col == premierClicLigne) || (row == clicCol && col == clicLigne))) {
+                    animationProgres += 0.2;
                     inAnimation = true;
-                    if (animationProgress < 100.05) {
-                        if (row == FirstclickedCol && col == FirstclickedRow) lineX += totalCellSize * (clickedRow - FirstclickedRow) * animationProgress / 100;
-                        if (row == clickedCol && col == clickedRow) lineX -= totalCellSize * (clickedRow - FirstclickedRow) * animationProgress / 100;
+                    if (animationProgres < 100.05) {
+                        if (row == premierClicCol && col == premierClicLigne) lineX += totalTailleCell * (clicLigne - premierClicLigne) * animationProgres / 100;
+                        if (row == clicCol && col == clicLigne) lineX -= totalTailleCell * (clicLigne - premierClicLigne) * animationProgres / 100;
                     } else {
                         if (clique == 2) faitUnMouvement(mat);
-                        animationProgress = 0;
-                        clickedRow = 0;
-                        FirstclickedRow = 5;
+                        animationProgres = 0;
+                        clicLigne = 0;
+                        premierClicLigne = 5;
                         inAnimation = false;
                         isHorizontalSwap = false;
                     }
                 }
 
-                if (swapAllowed && isVerticalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
-                    animationProgress += 0.2;
+                if (swapAllowed && isVerticalSwap && ((row == premierClicCol && col == premierClicLigne) || (row == clicCol && col == clicLigne))) {
+                    animationProgres += 0.2;
                     inAnimation = true;
-                    if (animationProgress < 100.05) {
-                        if (row == FirstclickedCol && col == FirstclickedRow) lineY += totalCellSize * (clickedCol - FirstclickedCol) * animationProgress / 100;
-                        if (row == clickedCol && col == clickedRow) lineY -= totalCellSize * (clickedCol - FirstclickedCol) * animationProgress / 100;
+                    if (animationProgres < 100.05) {
+                        if (row == premierClicCol && col == premierClicLigne) lineY += totalTailleCell * (clicCol - premierClicCol) * animationProgres / 100;
+                        if (row == clicCol && col == clicLigne) lineY -= totalTailleCell * (clicCol - premierClicCol) * animationProgres / 100;
                     } else {
                         if (clique == 2) faitUnMouvement(mat);
                         explosionTime = 0.5;
-                        animationProgress = 0;
-                        clickedRow = 0;
-                        FirstclickedRow = 5;
+                        animationProgres = 0;
+                        clicLigne = 0;
+                        premierClicLigne = 5;
                         inAnimation = false;
                         isVerticalSwap = false;
                     }
                 }
 
-                if (swapAllowed && isDiagonalSwap && ((row == FirstclickedCol && col == FirstclickedRow) || (row == clickedCol && col == clickedRow))) {
-                    animationProgress += 0.2;
+                if (swapAllowed && isDiagonalSwap && ((row == premierClicCol && col == premierClicLigne) || (row == clicCol && col == clicLigne))) {
+                    animationProgres += 0.2;
                     inAnimation = true;
-                    if (animationProgress < 100.05) {
-                        if (row == FirstclickedCol && col == FirstclickedRow){
-                            lineX += totalCellSize * (clickedRow - FirstclickedRow) * animationProgress / 100;
-                            lineY += totalCellSize * (clickedCol - FirstclickedCol) * animationProgress / 100;
+                    if (animationProgres < 100.05) {
+                        if (row == premierClicCol && col == premierClicLigne){
+                            lineX += totalTailleCell * (clicLigne - premierClicLigne) * animationProgres / 100;
+                            lineY += totalTailleCell * (clicCol - premierClicCol) * animationProgres / 100;
                         }
-                        if (row == clickedCol && col == clickedRow){
-                            lineX -= totalCellSize * (clickedRow - FirstclickedRow) * animationProgress / 100;
-                            lineY -= totalCellSize * (clickedCol - FirstclickedCol) * animationProgress / 100;
+                        if (row == clicCol && col == clicLigne){
+                            lineX -= totalTailleCell * (clicLigne - premierClicLigne) * animationProgres / 100;
+                            lineY -= totalTailleCell * (clicCol - premierClicCol) * animationProgres / 100;
                         }
                     } else {
                         if (clique == 2) faitUnMouvement(mat);
                         explosionTime = 0.5;
-                        animationProgress = 0;
-                        clickedRow = 0;
-                        FirstclickedRow = 5;
+                        animationProgres = 0;
+                        clicLigne = 0;
+                        premierClicLigne = 5;
                         inAnimation = false;
                         isDiagonalSwap = false;
                     }
@@ -619,78 +722,81 @@ void dessineBoard(MinGL &window, int board = 5, int cell = 50, int gap = 5, int 
     }
 }
 
-void initLevel(MinGL &window, int level, int wx, int wy){
+void initLevel(MinGL &window, const unsigned & level, const int & wx, const int & wy){
     if (level == 1) {
         if (initMats == false){
             score = 0;
             essai = 5;
-            neededScore = 15;
+            scoreMinimum = 15;
             initMat(mat, level);
             initMats = true;
-        } if (essai != 0 && score < neededScore) dessineBoard(window, 5, 50, 5, wx, wy);
+        } if (essai != 0 && score < scoreMinimum) dessineBoard(window, 5,  wx, wy);
     } else if (level == 2){
         if (initMats == false){
             score = 0;
             essai = 7;
-            neededScore = 18;
+            scoreMinimum = 18;
             initMat(mat, level);
             initMats = true;
-        } if (essai != 0 && score < neededScore) dessineBoard(window, 6, 50, 5, wx, wy);
+        } if (essai != 0 && score < scoreMinimum) dessineBoard(window, 6, wx, wy);
     } else if (level == 3){
         if (initMats == false){
             score = 0;
             essai = 8;
-            neededScore = 27;
+            scoreMinimum = 27;
             initMat(mat, level);
             initMats = true;
-        } if (essai != 0 && score < neededScore) dessineBoard(window, 7, 50, 5, wx, wy);
+        } if (essai != 0 && score < scoreMinimum) dessineBoard(window, 7, wx, wy);
     } else if (level == 4){
         if (initMats == false){
             score = 0;
             essai = 10;
-            neededScore = 30;
+            scoreMinimum = 30;
             initMat(mat, level);
             initMats = true;
             if (fullscreen == false) glutFullScreen();
             fullscreen = true;
-        } if (essai != 0 && score < neededScore) dessineBoard(window, 8, 50, 5, wx, wy);
+        } if (essai != 0 && score < scoreMinimum) dessineBoard(window, 8, wx, wy);
     } else if (level == 5){
         if (initMats == false){
             score = 0;
             essai = 13;
-            neededScore = 44;
+            scoreMinimum = 44;
             initMat(mat, level);
             initMats = true;
             if (fullscreen == false) glutFullScreen();
             fullscreen = true;
-        } if (essai != 0 && score < neededScore) dessineBoard(window, 10, 50, 5, wx, wy);
+        } if (essai != 0 && score < scoreMinimum) dessineBoard(window, 10, wx, wy);
     } else if (level == 6) {
         if (initMats == false){
-            randomSize = rand() % 6 + 5;
             initMat(mat, level, 4);
             score = 0;
-            essai = randomSize;
-            neededScore = 3 * randomSize;
+            essai = nvAleatoireTaille;
+            scoreMinimum = 3 * nvAleatoireTaille;
             initMats = true;
             if (fullscreen == false) glutFullScreen();
             fullscreen = true;
         }
-        if (essai != 0 && score < neededScore) dessineBoard(window, randomSize, 50, 5, wx, wy);
+        if (essai != 0 && score < scoreMinimum) dessineBoard(window, nvAleatoireTaille, wx, wy);
     } else if (level == 7) {
         if (inEditeur == 1){
-            editeurCellules = 0;
-            editeurColRow = 0;
+            tailleNvEditeur = 5;
+            editeurCellules = 2;
             score = 0;
-            essai = 0;
-            neededScore = 0;
+            essai = 1;
+            scoreMinimum = 1;
             inEditeur = 2;
+            if (fullscreen == false) glutFullScreen();
+            fullscreen = true;
         }
-        editeurNiveau(window);
-        if (essai != 0 && score < neededScore && inEditeur == 3) dessineBoard(window, editeurColRow, 50, 5, wx, wy);
+        if (inEditeur == 2) editeurNiveau(window);
+        if (inEditeur == 3) dessineBoard(window, tailleNvEditeur, wx, wy);
+        if (inEditeur == 4 && (essai != 0 && score < scoreMinimum)) dessineBoard(window, tailleNvEditeur, wx, wy);
     }
 }
 
-void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
+void position(MinGL &window, const unsigned & x, const unsigned & y,
+              const unsigned & wx, const unsigned & wy, const bool &isClick){
     bool arrowCursor = true;
 
     // On cherche la position x et y du x afin de oui ou non exécuter un évènement
@@ -719,6 +825,7 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
             if (isClick){
                 level = 0;
                 initMats = false;
+                if (inEditeur > 1) inEditeur = 1;
             }
             else glutSetCursor(GLUT_CURSOR_INFO);
         }
@@ -763,39 +870,84 @@ void position(MinGL &window, int x, int y, int wx, int wy, bool isClick){
     }
 
     // Si le joueur souhaite recommencer le niveau, on recommence une nouvelle matrice
-    if (level != 0 && inEditeur != 2 && x >= 263+wx &&  x <= 380+wx && y >= 118+wy && y <= 133+wy){
+    if (((level > 0 && level < 7) || inEditeur == 4)  && x >= 263+wx &&  x <= 380+wx && y >= 118+wy && y <= 133+wy){
         arrowCursor = false;
-        if (isClick) initMats = false;
+        if (isClick && (level > 0 && level < 7)) {
+            initMats = false;
+        }
+        else if (isClick && inEditeur == 4) inEditeur = 2;
         else glutSetCursor(GLUT_CURSOR_INFO);
     }
 
     // Si le joueur clique sur l'une des cases de la cellule
-    if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalCellSize &&
-        y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalCellSize && !(inAnimation) && !(inExplosion)) {
+    if (level != 0 && x >= boardTopLeftX && x <= boardTopLeftX + boardSize * totalTailleCell &&
+        y >= boardTopLeftY && y <= boardTopLeftY + boardSize * totalTailleCell && !(inAnimation) && !(inExplosion)) {
         arrowCursor = false;
 
         if (isClick) {
+
             // On calcule l'indice de la cellule
-            clickedCol = (y - boardTopLeftY) / totalCellSize;
-            clickedRow = (x - boardTopLeftX) / totalCellSize;
+            clicCol = (y - boardTopLeftY) / totalTailleCell;
+            clicLigne = (x - boardTopLeftX) / totalTailleCell;
+
+            // Si on est dans l'editeur de niveau et que l'on souhaite placer un cube
+            if (inEditeur == 3) mat[clicCol][clicLigne] = squareType;
 
             // On verifie que les 2 cellules cliquées sont compatibles
-            if (clique == 1 && (abs(FirstclickedCol - clickedCol) <= 1 && abs(FirstclickedRow - clickedRow) <= 1
-                                && mat[clickedCol][clickedRow] != mat[FirstclickedCol][FirstclickedRow])
-                && mat[clickedCol][clickedRow] != KAIgnorer && mat[FirstclickedCol][FirstclickedRow] != KAIgnorer){
-                if (swapAllowed) ++clique;
-            } else if (clique == 1) clique = -1;
+            if (clique == 1 && (abs((int)premierClicCol - (int)clicCol) <= 1 && abs((int)premierClicLigne - (int)clicLigne) <= 1
+                                && mat[clicCol][clicLigne] != mat[premierClicCol][premierClicLigne])
+                && mat[clicCol][clicLigne] != KAIgnorer && mat[premierClicCol][premierClicLigne] != KAIgnorer){
+                if (swapAllowed && ((level > 0 && level < 7) || inEditeur == 4)) ++clique;
 
-            if (clique < 1 && swapAllowed && mat[clickedCol][clickedRow] != KAIgnorer) ++clique;
-            cout << clique << endl;
+            }
 
-            cout << "Vous avez cliqué sur la cellule ligne (col) " << clickedCol << ", colonne (row) " << clickedRow << endl;
+            if (clique < 1 && swapAllowed && mat[clicCol][clicLigne] != KAIgnorer) ++clique;
+
             if (clique == 1){
-                FirstclickedCol = clickedCol;
-                FirstclickedRow = clickedRow;
+                premierClicCol = clicCol;
+                premierClicLigne = clicLigne;
             }
         } else if (!isClick) glutSetCursor(GLUT_CURSOR_INFO);
     }
+
+    if (inEditeur > 1 && x >= 299+wx && x <= 345+wx && y >= 117+wy && y <= 130+wy) {
+        arrowCursor = false;
+        if (isClick && inEditeur == 2) {
+            tailleNvEditeur = 5;
+            editeurCellules = 2;
+            scoreMinimum = 1;
+            essai = 1;
+        } else if (isClick && inEditeur ==3) initMat(mat, level, editeurCellules, tailleNvEditeur);
+        else glutSetCursor(GLUT_CURSOR_INFO);
+    }
+    if (inEditeur > 1 && x >= 273+wx && x <= 371+wx && y >= 78+wy && y <= 91+wy){
+        arrowCursor = false;
+        if (isClick){
+            if (inEditeur == 2){
+                initMat(mat, level, editeurCellules, tailleNvEditeur);
+                inEditeur = 3;
+            }
+            for(size_t i = 0; i < mat.size(); ++i){
+                for(size_t j = 0; j < mat[i].size(); ++j){
+                    if (mat[i][j] == KAIgnorer) filled = false;
+                }
+            }
+            if (inEditeur == 3 && filled){
+                clique = 0;
+                inEditeur = 4;
+            }
+            else filled = true;
+        }
+        else if (!isClick) glutSetCursor(GLUT_CURSOR_INFO);
+    }
+    if (inEditeur == 3 && x >= -84+wx && x <= -23+wx && y >= 257+wy && y <=270+wy){
+        arrowCursor = false;
+        if (isClick && squareType < editeurCellules){
+            ++squareType;
+        } else if (isClick) squareType = 1;
+        if (!isClick) glutSetCursor(GLUT_CURSOR_INFO);
+    }
+
     if (arrowCursor) glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 }
 
@@ -820,7 +972,7 @@ void events(MinGL &window, int wx, int wy) {
             realTimeY = triPos.getY();
             isClick = false;
             position(window, realTimeX, realTimeY, wx, wy, isClick);
-            if (inEditeur == 2) editeurNiveau(window, realTimeX, realTimeY, isClick);
+            if (inEditeur == 2) editeurNiveau(window , realTimeX, realTimeY, isClick);
             break;
 
         case nsEvent::EventType_t::MouseClick:
@@ -832,11 +984,10 @@ void events(MinGL &window, int wx, int wy) {
             if (mouse_clicked == false){
                 clickedX = triPos.getX();
                 clickedY = triPos.getY();
-                cout << "Position x : " << clickedX << " Position y : " << clickedY << endl;
                 mouse_clicked = true;
                 isClick = true;
                 position(window, clickedX, clickedY, wx, wy, isClick);
-                if (inEditeur == 2) editeurNiveau(window, clickedX, clickedY, isClick);
+                if (inEditeur == 2) editeurNiveau(window , clickedX, clickedY, isClick);
             } else mouse_clicked = false;
 
             break;
@@ -850,7 +1001,7 @@ void events(MinGL &window, int wx, int wy) {
 
 
 // Fonction utilisant MinGL pour dessiner
-void dessiner(MinGL &window, int wx, int wy) {
+void dessiner(MinGL &window, const unsigned &wx, const unsigned &wy) {
 
     // On dessine le bouton pour fermer le jeu
     window << nsShape::Circle(nsGraphics::Vec2D(620+wx*2, 20+wy/10), 10, nsGraphics::KRed);
@@ -873,32 +1024,65 @@ void dessiner(MinGL &window, int wx, int wy) {
         // On dessine le nombre d'essai
         window << nsGui::Text(nsGraphics::Vec2D(20, 40), "Essai(s) : " + to_string(essai), nsGraphics::KWhite);
 
-        if (clique == 1 && (!(score >= neededScore) || (essai != 0))) window << nsGui::Text(nsGraphics::Vec2D(320+wx, 170+wy), "Veuillez cliquer sur un autre cube", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+        if (clique == 1 && ((level > 0 && level < 7) || inEditeur == 4) && (!(score >= scoreMinimum) || (essai != 0))) window << nsGui::Text(nsGraphics::Vec2D(320+wx, 170+wy), "Veuillez cliquer sur un autre cube", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
 
         // On dessine le nom du nouveau (ex: niveau 1)
-        if (level > 0 && level < 6){
+        if (level > 0 && level < 7){
             window << nsGui::Text(nsGraphics::Vec2D(320+wx, 55+wy), "Niveau " + to_string(level), nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                                  nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+        } else if (inEditeur == 4){
+            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 55+wy), "Niveau personnalise", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
         }
 
-        if (inEditeur != 2){
+        if ((level > 0 && level < 7) || inEditeur == 4){
             // On dessine le nombre de score néscessaire afin de gagner
-            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 90+wy), "Vous avez besoin de " + to_string(neededScore) + " points !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 90+wy), "Vous avez besoin de " + to_string(scoreMinimum) + " points !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
             // On dessine le le texte qui permet au joueur de relancer le niveau
             window << nsGui::Text(nsGraphics::Vec2D(320+wx, 130+wy), "Recommencer", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-        } else {
+
+        } else if (inEditeur > 1 && inEditeur < 4) {
             // On dessine le nombre de score néscessaire afin de gagner
-            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 110+wy), "Commencer", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 90+wy), "Suivant", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
 
-            // On dessine le le texte qui permet au joueur de relancer le niveau
-            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 165+wy), "Reset", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+            // On dessine le texte qui permet de reset
+            window << nsGui::Text(nsGraphics::Vec2D(320+wx, 130+wy), "Reset", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+
+            if (inEditeur == 3) {
+                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 165+wy), "Placez vos carres", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                                      nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+                window << nsGui::Text(nsGraphics::Vec2D(-55 + wx, 270+wy), "Suivant", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                                      nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+                window << nsGui::Text(nsGraphics::Vec2D(-50 + wx, 300+wy), "Carre actuel : ", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                                      nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
+                switch(squareType){
+                case 1:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 320+wy), nsGraphics::Vec2D(-25+wx, 380 + wy), nsGraphics::KBlue);
+                    break;
+                case 2:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 320+wy), nsGraphics::Vec2D(-25+wx, 380 + wy), nsGraphics::KRed);
+                    break;
+                case 3:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 320+wy), nsGraphics::Vec2D(-25+wx, 380 + wy), nsGraphics::KBlack);
+                    break;
+                case 4:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 320+wy), nsGraphics::Vec2D(-25+wx, 380 + wy), nsGraphics::KYellow);
+                    break;
+                case 5:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 320+wy), nsGraphics::Vec2D(-25+wx, 380 + wy), nsGraphics::KGreen);
+                    break;
+                case 6:
+                    window << nsShape::Rectangle(nsGraphics::Vec2D(-85+wx, 320+wy), nsGraphics::Vec2D(-25+wx, 380 + wy), nsGraphics::KWhite);
+                    break;
+                }
+            }
         }
 
         // On dessine la flèche pour retourner au menu
@@ -906,17 +1090,17 @@ void dessiner(MinGL &window, int wx, int wy) {
         window << nsShape::Line(nsGraphics::Vec2D(570+wx*2, 20+wy/10), nsGraphics::Vec2D(580+wx*2, 20+wy/10), nsGraphics::KWhite, 3.f);
 
         // Si le joueur a atteint le score demandé, alors il a gagné le niveau ou s'il n'a plus d'essai, il a perdu
-        if ((score >= neededScore || (essai == 0 && score < neededScore)) && inEditeur == 1){
+        if ((score >= scoreMinimum || (essai == 0 && score < scoreMinimum)) && (inEditeur == 4)){
             // On affiche le message pour que le joueur puisse recommencer une partie
             window << nsGui::Text(nsGraphics::Vec2D(320+wx, 280+wy), "VOUS POUVEZ RECOMMENCER !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                   nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
-            if (score >= neededScore){
+            if (score >= scoreMinimum){
                 // Si il a gagné, on affiche un messgae de victoire
-                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 250+wy), "VOUS AVEZ GAGNE(E) !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 250+wy), "VOUS AVEZ GAGNE !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                       nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
             }   // Sinon, si il a perdu, on affiche un message de defaite
-            else if (essai <= 0 && score < neededScore){
-                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 250+wy), "VOUS AVEZ PERDU(E) !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
+            else if (essai <= 0 && score < scoreMinimum){
+                window << nsGui::Text(nsGraphics::Vec2D(320+wx, 250+wy), "VOUS AVEZ PERDU !", nsGraphics::KWhite, nsGui::GlutFont::BITMAP_HELVETICA_18,
                                       nsGui::Text::HorizontalAlignment::ALIGNH_CENTER);
             }
         }
@@ -934,7 +1118,6 @@ int main() {
     window.initGlut();
     window.initGraphic();
 
-
     // Variable qui tient le temps de frame
     chrono::microseconds frameTime = chrono::microseconds::zero();
 
@@ -944,8 +1127,8 @@ int main() {
         // On récupère la taille de la fenêtre
         nsGraphics::Vec2D windowSize;
         windowSize = window.getWindowSize();
-        int wx = (windowSize.getX() - 640)/2;
-        int wy = (windowSize.getY() - 640)/4;
+        unsigned wx = (windowSize.getX() - 640)/2;
+        unsigned wy = (windowSize.getY() - 640)/4;
 
 
         // Récupère l'heure actuelle
